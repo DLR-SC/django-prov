@@ -36,7 +36,7 @@ PROVENANCE = {
 3. Import and initialize the ProvenanceGenerator where you want to capture "Activities". For further information see the [Configuration](docs/configuration.md#Activities):  
 
 ```python
-from django_prov.signals import ProvenanceGenerator
+from django_prov.generator import ProvenanceGenerator
 
 generator = ProvenanceGenerator.get("")
 ```
