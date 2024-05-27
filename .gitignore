@@ -1,0 +1,29 @@
+__pycache__
+*.pyc
+*.
+.eggs/
+*.egg*
+.pypirc
+
+# Docs und package
+dist/
+build/
+
+# IDEs
+.project/
+.pydevproject/
+.idea/
+.run/
+
+# Virtual Environments
+env
+env/
+venv/
+env36/
+env36noairflow/
+env37/
+env38/
+env38noairflow/
+env39/
+env3x/
+

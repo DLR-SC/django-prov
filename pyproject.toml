@@ -1,0 +1,32 @@
+[build-system]
+requires = ['setuptools']
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-prov"
+description = "Application for capturing Provenance Data in Django projects "
+authors = [
+    {name = "Benjamin Bauer", email = "benjamin.bauer@dlr.de"},
+]
+requires-python = ">=3.8"
+license = {text = "License :: Other/Proprietary License"}
+dependencies = [
+    "Django",
+    "prov[dot]",
+]
+classifiers = [
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+]
+dynamic = ["version", "readme"]
+
+[project.urls]
+"Code" = "https://gitlab.dlr.de/baue_bn/BA-dhbw-library-handling"
+
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "django_prov.__version__"}
+readme = {file = ["README.rst"]}
