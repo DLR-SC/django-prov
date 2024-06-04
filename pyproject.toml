@@ -21,8 +21,7 @@ classifiers = [
 dynamic = ["version", "readme"]
 
 [project.urls]
-"Code" = "https://gitlab.dlr.de/baue_bn/BA-dhbw-library-handling"
-
+"Code" = "https://gitlab.dlr.de/ssa/django-prov"
 
 [tool.setuptools]
 include-package-data = true

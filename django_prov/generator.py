@@ -65,7 +65,6 @@ class ProvenanceGenerator:
         """
         identifier = self.create_prov_record(sender, instance)
         if len(self.executing_activities) > 0:
-            print(self.executing_activities[-1])
             self.create_relation(identifier, self.executing_activities[-1], prov.ProvGeneration)
 
     def handle_pre_save(self, sender, instance, **kwargs):
@@ -78,7 +77,8 @@ class ProvenanceGenerator:
         try:
             orig_object = sender.objects.get(pk=instance.pk)
             self.create_prov_record(sender, orig_object)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist as e:
+            print(e, file=sys.stderr)
             pass
 
     def handle_m2m_changed(self, sender, instance, **kwargs):
@@ -92,13 +92,13 @@ class ProvenanceGenerator:
             try:
                 entity_with_m2m = list(self.filter_prov_objects(instance._meta.app_label, sender._meta.object_name, instance.id))[-1]
             except Exception as e:
+                print(e, file=sys.stderr)
                 parent_entity = list(self.filter_prov_objects(instance._meta.app_label, instance._meta.object_name, instance.id))[-1]
                 entity_with_m2m = self.create_many_to_many_record(parent_entity, sender._meta.object_name)
             for pk in kwargs["pk_set"]:
                 try:
                     m2m_entity = list(self.filter_prov_objects(kwargs["model"]._meta.app_label, kwargs["model"]._meta.object_name, pk))[-1].identifier._str
-                except Exception as e:
-                    # print(e)
+                except IndexError as e:
                     m2m_entity = self.create_prov_record(kwargs["model"], kwargs["model"].objects.get(pk=pk))
 
                 self.create_relation(entity_with_m2m, m2m_entity, prov.ProvMembership)
@@ -175,8 +175,7 @@ class ProvenanceGenerator:
             last_similar_record = self.filter_prov_objects(obj._meta.app_label, obj._meta.object_name, obj.id)[-1]
             if self.check_is_already_existing(last_similar_record, attributes):
                 return last_similar_record.identifier._str
-        except Exception as e:
-            # print(e)
+        except IndexError as e:
             pass
 
         if obj._meta.label in self.entities:
@@ -231,7 +230,6 @@ class ProvenanceGenerator:
                 if not matching_derivation:
                     self.create_relation(records[i + 1].identifier._str, records[i].identifier._str,
                                          prov.ProvDerivation)
-                    # self.document.derivation(records[i+1], records[i])
 
     def create_foreign_key_entry(self, entity, foreign_model, foreign_pk):
         """
@@ -243,11 +241,9 @@ class ProvenanceGenerator:
         foreign_key_obj = foreign_model.objects.get(pk=foreign_pk)
         identifier = self.create_prov_record(foreign_model, foreign_key_obj)
         if foreign_model._meta.label in self.entities:
-            # self.document.hadMember(entity, identifier)
             self.create_relation(entity.identifier._str, identifier, prov.ProvMembership)
         elif foreign_model._meta.label in self.agents or (
                 "auth" in settings.PROVENANCE["NAMESPACES"]["EXTRA"] and foreign_model._meta.app_label == "auth"):
-            # self.document.wasAttributedTo(entity, identifier)
             self.create_relation(entity.identifier._str, identifier, prov.ProvAttribution)
 
     def create_many_to_many_record(self, parent_entity, obj, m2m_field):
@@ -284,8 +280,6 @@ class ProvenanceGenerator:
                 else:
                     pass
         try:
-            if instance._meta.many_to_many:
-                print(instance._meta.many_to_many)
             for field in instance._meta.many_to_many:
                 identifier = self.create_many_to_many_record(entity, instance, field)
                 objs = list(getattr(instance, field.attname).all())
@@ -295,7 +289,7 @@ class ProvenanceGenerator:
                 else:
                     pass
         except IndexError as e:
-            print(e)
+            print(e, file=sys.stderr)
 
     def check_is_already_existing(self, record, attributes):
         """
@@ -346,7 +340,7 @@ class ProvenanceGenerator:
             path = output["PATH"]
             os.makedirs(path, exist_ok=True)
         except Exception as e:
-            print(e)
+            print(e, file=sys.stderr)
             path = "."
 
         for serialization in output["SERIALIZE"]:
@@ -426,13 +420,11 @@ class ProvenanceGenerator:
                         related_objs = self.filter_prov_objects(possible_obj._meta.app_label,
                                                                 possible_obj._meta.object_name, possible_obj.id)
                         self.create_relation(related_objs[-1].identifier._str, identifier, prov.ProvGeneration)
-                        # self.document.generation(related_objs[-1], identifier)
                     except Exception as e:
-                        # print(e)
+                        print(e, file=sys.stderr)
                         pass
                 # check for other activities that are generated by the most recent activity
                 if len(self.executing_activities) > 0:
-                    # self.document.communication(identifier, self.executing_activities[-1])
                     self.create_relation(identifier, self.executing_activities[-1], prov.ProvCommunication)
                 # get request user
                 if isinstance(args[0], WSGIRequest) and "auth" in settings.PROVENANCE["NAMESPACES"]["EXTRA"]:
@@ -440,10 +432,8 @@ class ProvenanceGenerator:
                         user_agent_identifier = \
                         list(self.filter_prov_objects("auth", "User", args[0].user.id, prov.ProvAgent))[
                             -1].identifier._str
-                    except Exception as e:
-                        # print(e)
+                    except IndexError as e:
                         user_agent_identifier = self.create_prov_record(User, args[0].user)
-                    # self.document.association(identifier, user_agent_identifier)
                     self.create_relation(identifier, user_agent_identifier, prov.ProvAssociation)
                 # If list is empty it means every activity got handled -> print finished document and start new one
                 if not self.executing_activities:
