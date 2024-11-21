@@ -2,6 +2,42 @@
 
 This file shows the different configuration options for your Provenance Application. The W3C Data Model consists of three types: *[Entities](https://www.w3.org/TR/2013/REC-prov-dm-20130430/#term-entity), [Agents](https://www.w3.org/TR/2013/REC-prov-dm-20130430/#term-agent) and [Activities](https://www.w3.org/TR/2013/REC-prov-dm-20130430/#term-Activity)*.  
 
+## Namespaces
+
+To capture different applications in your project, you need to declare the namespaces for the apps. The default namespace can be set through your ROOT_URLCONF or declared manually. It is mandatory.
+
+
+```python
+PROVENANCE = {
+    "NAMESPACES": {
+            "DEFAULT": f"{ROOT_URLCONF.split('.')[0]}.org/",
+            # or
+            "DEFAULT": "yourproject.org/",
+        },
+}
+```
+
+The extra namespaces contain all apps you want to capture. This can include django specific apps, e.g. the "auth" app to capture user information. You can also add system specific information by adding "sys". If you want to capture Djangos Template view classes, you have to add "django" to the list.
+
+```python
+PROVENANCE = {
+    "NAMESPACES": {
+            "EXTRA": [
+                # if you want to capture auth.User objectinfo, add 'auth'
+                "auth",
+                # if you want to capture django specific view classes, add 'django'
+                "django",
+                # if you want to capture system specific information, add 'sys'
+                "sys",
+                "yourapp1",
+                "yourapp2",
+                "django_prov"
+        ]
+            
+        },
+}
+```
+
 ## Entities
 You can declare which of your models you want to track as an entity by using the 'ENTITIES' Key in the Provenance Dictionary in your settings:
 
