@@ -261,7 +261,7 @@ test_handle_m2m_changed_pattern = (
 
 
 test_create_prov_record_student_pattern = (
-    r'entity(example:Student-1-.*, [prov:type="example:\<class \'example.models.Student\'>", example:id="1", example:matrikelnr="1234567", example:person_id="1"])',
-    r'\<ProvAgent: auth:User-1-\>',
-    r'\<ProvAttribution: \(example:Student-1-2024-09-09_11-44-31-812719, auth:User-1-2024-09-09_11-44-31-812719\)\>'
+    r'entity\(example:Student-1-.*, \[prov:type="example:\<class \'example\.models\.Student\'>", example:id="1", example:matrikelnr="1234567", example:person\_id="1"\]\)',
+    r'agent\(auth:User-1-.*, \[prov:type="auth:<class \'django.contrib.auth.models.User\'>", auth:id="1", auth:password=".*", auth:last_login="None", auth:is_superuser="False", auth:username="Student", auth:first_name="", auth:last_name="", auth:email="", auth:is_staff="False", auth:is_active="True", auth:date_joined=".*"\]\)',
+    r'wasAttributedTo\(example:Student-1-.*, auth:User-1-.*\)'
 )

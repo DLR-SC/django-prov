@@ -1,0 +1,19 @@
+stages:
+  - test
+
+default:
+  image: python:3.12
+  before_script:
+    - python -m venv env
+    - source env/bin/activate
+    - pip install .
+
+test-django-execution:
+  stage: test
+  tags:
+    - bacardi2
+    - docker
+  script:
+    - cd example/
+    - python -m django --version
+    - python manage.py test tests
