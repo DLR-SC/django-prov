@@ -136,7 +136,7 @@ PROVENANCE = {
     },
     "OUTPUT": {
         # captures files in a directory on django-project level
-        "PATH": f"tester123/",
+        "PATH": f"provenance_files/",
         "SERIALIZE": [
             "n",
 
