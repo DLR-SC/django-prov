@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Returnings</h2>
+
+    <table style="width: 50%">
+        <tr>
+            <th style="text-align:left">Borrowing ID</th>
+            <th style="text-align:left">Student</th>
+            <th style="text-align:left">Responsible Librarian</th>
+            <th style="text-align:left">Borrowed Books</th>
+            <th style="text-align:left">Date of Order</th>
+            <th style="text-align:left">Borrowing Span</th>
+            <th style="text-align:left">Returned Date</th>
+
+
+        </tr>
+        {% for returning in object_list %}
+            <tr>
+                <td>{{ returning.id }}</td>
+                <td>{{ returning.student.person }}</td>
+                <td>{{ returning.responsible_librarian}}</td>
+
+                <td><ul>{% for book in returning.borrowed_books.all %}
+                    <li> {{ book.isbn }} - {{book.title}} </li>
+                    {% endfor %} </ul></td>
+                <td>{{ returning.date_of_order }}</td>
+                <td>{{ returning.bor_start_date }} - {{ returning.bor_auto_end_date }}</td>
+                <td>{{ returning.date_of_order }}</td>
+
+            </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{% url 'book.list' %}">Book List</a></p>
+    <p><a href="{% url 'order.list' %}">Order List</a></p>
+    <p><a href="{% url 'index' %}">Back to Index</a> </p>
+{% endblock %}
