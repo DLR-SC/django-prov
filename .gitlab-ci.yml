@@ -4,10 +4,10 @@ stages:
 default:
   image: python:3.12
   before_script:
+    - apt update -y
+    - apt install -y graphwiz graphviz-dev
     - python -m venv env
     - source env/bin/activate
-    - wget https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.0/ubuntu_24.10_graphviz-12.2.0-cmake.deb
-    - dpkg --install ubuntu_24.10_graphviz-12.2.0-cmake.deb
     - pip install .
 
 test-django-execution:
