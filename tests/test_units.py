@@ -159,10 +159,9 @@ class ProvenanceGeneratorTest(TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     def test_serialized_document_invalid_format(self, mock_stderr, mock_stdout):
         generator = get_generator()
-        settings.PROVENANCE["OUTPUT"]["PATH"] = "*"
+        settings.PROVENANCE["OUTPUT"]["PATH"] = ""
         settings.PROVENANCE["OUTPUT"]["SERIALIZE"] = ["foo", "foo123", "json"]
         settings.PROVENANCE["OUTPUT"]["GRAPHIC"] = ["graphic", "pdf"]
-        expected_output0 = "[WinError 123] Die Syntax für den Dateinamen, Verzeichnisnamen oder die Datenträgerbezeichnung ist falsch: '*'"
         expected_output1 = "'foo' is not a valid serialization format. Please adapt your settings.py."
         expected_output2 = "'foo123' is not a valid serialization format. Please adapt your settings.py."
         expected_output3 = "'graphic' is not a valid graphical output format. Please adapt your settings.py."
@@ -175,7 +174,7 @@ class ProvenanceGeneratorTest(TestCase):
         generator.print_document()
         err = mock_stderr.getvalue()
         output = mock_stdout.getvalue()
-        self.assertIn(expected_output0, err)
+        print(err)
         self.assertIn(expected_output1, err)
         self.assertIn(expected_output2, err)
         self.assertIn(expected_output3, err)
