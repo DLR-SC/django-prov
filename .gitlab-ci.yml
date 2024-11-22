@@ -21,7 +21,7 @@ test-django-execution:
     - python -m django --version
     - python manage.py test tests
 
-Publish process:
+publishing-process:
   stage: publish
   variables:
     TWINE_PASSWORD: ${CI_JOB_TOKEN}
@@ -30,10 +30,9 @@ Publish process:
     - bacardi2
     - docker
   script:
-    - cd ..
     - pwd
+    - ls -la
     - pip install twine
     - pip install -e .
     - pip wheel -e .
-    - ls
     - twine upload --repository-url https://gitlab.dlr.de/api/v4/projects/11169/packages/pypi --verbose django_prov*.whl
