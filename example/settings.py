@@ -145,4 +145,9 @@ PROVENANCE = {
             "svg"
         ],
     },
+    "OTHER": {
+        # sets the max recorded length of an argument that is passed into a recorded function
+        "MAX_ARG_LENGTH": 100
+    }
+
 }

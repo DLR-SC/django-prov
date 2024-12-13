@@ -66,6 +66,22 @@ PROVENANCE = {
 | !!  Make sure to not declare a Class as an Entity and an Agent at the same time. This would distort the resulting data. !! |
 |----------------------------------------------------------------------------------------------------------------------------|
 
+
+## Other
+There are other settings you can configure:
+```python
+PROVENANCE = {
+    "OTHER": {
+        "MAX_ARG_LENGTH": 100
+    }
+}
+```
+
+| Key            | Usage                                                                                                                  |
+|----------------|------------------------------------------------------------------------------------------------------------------------|
+| MAX_ARG_LENGTH | Passed args or kwargs to the func can be long. You can cut the record at a specific length to not overfill your storage |
+
+
 ## Activities
 
 If you want to track the execution of Activites in your app, you have to use decorators for each function or Class itself. These decorators look different for the different cases:

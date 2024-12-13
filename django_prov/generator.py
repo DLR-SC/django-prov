@@ -5,6 +5,8 @@ import sys
 import warnings
 import datetime
 
+from functools import wraps
+
 import prov.model as prov
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -42,6 +44,7 @@ class ProvenanceGenerator:
         self.default_namespace = default_ns
         self.entities = settings.PROVENANCE['ENTITIES']
         self.agents = settings.PROVENANCE['AGENTS']
+        self.max_arg_length = settings.PROVENANCE['OTHER']['MAX_ARG_LENGTH']
         self.connect_signals()
         self.create_new_document()
 
@@ -418,6 +421,7 @@ class ProvenanceGenerator:
             else:
                 _name = name
 
+            @wraps(func)
             def wrapped_func(*args, **kwargs):
                 """
                 Captures the execution of different decorated Views and functions.
@@ -435,12 +439,14 @@ class ProvenanceGenerator:
                 attributes = [(prov.PROV_TYPE, f"{label}:func {func}")]
                 attributes.extend(get_system_info_attributes("sys"))
 
+                arg_length_check = lambda s: f"{s[:self.max_arg_length]}..." if len(s) > self.max_arg_length else s
+
+                # append args and kwargs the orig func got called with
                 if len(args) > 0:
-                    for i, arg in enumerate(args):
-                        attributes.append((f"{label}:args-{i}", str(arg)))
+                    attributes.extend((f"{label}:args-{i}", arg_length_check(str(arg))) for i, arg in enumerate(args))
                 if len(kwargs) > 0:
-                    for i, kwarg in enumerate(kwargs):
-                        attributes.append((f"{label}:kwargs-{i}-{kwarg}", str(kwargs[kwarg])))
+                    attributes.extend((f"{label}:kwargs-{i}-{kwarg}", arg_length_check(str(kwargs[kwarg]))) for i, kwarg in enumerate(kwargs))
+
                 identifier = f"{label}:{_name}-{start_time.strftime('%Y-%m-%d_%H-%M-%S-%f')}"
 
                 self.executing_activities.append(identifier)
