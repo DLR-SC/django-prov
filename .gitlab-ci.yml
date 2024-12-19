@@ -28,7 +28,9 @@ coverage-report:
     - docker
   script:
     - coverage run --source="django_prov" example/manage.py test
+    - coverage report
     - coverage html
+  coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     expose_as: "Coverage Report"
     paths:

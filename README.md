@@ -1,4 +1,4 @@
-
+![coverage](https://gitlab.dlr.de/ssa/django-prov/badges/-/tree/3-add-tests/coverage-report.svg?job=coverage-report)
 # django-prov
 
 django-prov is a Django app to capture Provenance related data in your Django project. It complies to the [W3C PROV Data Model](https://www.w3.org/TR/2013/REC-prov-dm-20130430/).
