@@ -23,6 +23,11 @@ dynamic = ["version", "readme"]
 [project.urls]
 "Code" = "https://gitlab.dlr.de/ssa/django-prov"
 
+[project.optional-dependencies]
+test = [
+    "coverage"
+]
+
 [tool.setuptools]
 include-package-data = true
 
