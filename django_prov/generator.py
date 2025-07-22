@@ -5,6 +5,8 @@ import sys
 import warnings
 import datetime
 
+from functools import wraps
+
 import prov.model as prov
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -20,9 +22,9 @@ def get_system_info_attributes(label):
     :param label: Prefix of the namespace that has to be taken
     :return: List of Attributes
     """
-    attributes = [(f'{label}:Python Version', sys.version)]
-    attributes.append((f'{label}:OS', platform.platform()))
-    attributes.append((f'{label}:OS Username', getpass.getuser()))
+    attributes = [(f'{label}:python_version', sys.version)]
+    attributes.append((f'{label}:os', platform.platform()))
+    attributes.append((f'{label}:os_username', getpass.getuser()))
     return attributes
 
 
@@ -42,6 +44,7 @@ class ProvenanceGenerator:
         self.default_namespace = default_ns
         self.entities = settings.PROVENANCE['ENTITIES']
         self.agents = settings.PROVENANCE['AGENTS']
+        self.max_arg_length = settings.PROVENANCE['OTHER']['MAX_ARG_LENGTH']
         self.connect_signals()
         self.create_new_document()
 
@@ -75,10 +78,11 @@ class ProvenanceGenerator:
         :param kwargs: other with the signal passed kwargs
         """
         try:
-            orig_object = sender.objects.get(pk=instance.pk)
+            orig_object = sender.objects.get(pk=instance.id)
             self.create_prov_record(sender, orig_object)
         except ObjectDoesNotExist as e:
-            print(e, file=sys.stderr)
+            # No previous state to derive a new entity from
+            # No problem for the rest of the program
             pass
 
     def handle_m2m_changed(self, sender, instance, **kwargs):
@@ -88,28 +92,43 @@ class ProvenanceGenerator:
         :param instance: Instance of the given class
         :param kwargs: other with the signal passed kwargs
         """
+        # instance._meta.many_to_many
         if kwargs["action"] == "post_add" or kwargs["action"] == "post_remove":
             try:
-                entity_with_m2m = list(self.filter_prov_objects(instance._meta.app_label, sender._meta.object_name, instance.id))[-1]
+                m2m_entity = list(self.filter_prov_objects(instance._meta.app_label, sender._meta.object_name, instance.id))[-1]
             except Exception as e:
                 print(e, file=sys.stderr)
-                parent_entity = list(self.filter_prov_objects(instance._meta.app_label, instance._meta.object_name, instance.id))[-1]
-                entity_with_m2m = self.create_many_to_many_record(parent_entity, sender._meta.object_name)
+                try:
+                    parent_entity_of_m2m_entity_identifier = list(self.filter_prov_objects(instance._meta.app_label, instance._meta.object_name, instance.id))[-1]
+
+                except Exception as e:
+                    print(e, file=sys.stderr)
+                    parent_entity_of_m2m_entity_identifier = self.create_prov_record(instance._meta.model, instance)
+                parent_entity_of_m2m_entity = self.document.get_record(parent_entity_of_m2m_entity_identifier)[0]
+
+                for field in instance._meta.many_to_many:
+                    if instance._meta.object_name + "_" + field.attname == sender._meta.object_name:
+                        m2m_entity = self.create_many_to_many_record(parent_entity_of_m2m_entity, instance, field)
+
             for pk in kwargs["pk_set"]:
                 try:
-                    m2m_entity = list(self.filter_prov_objects(kwargs["model"]._meta.app_label, kwargs["model"]._meta.object_name, pk))[-1].identifier._str
+                    entity_in_m2m = list(self.filter_prov_objects(kwargs["model"]._meta.app_label, kwargs["model"]._meta.object_name, pk))[-1].identifier._str
                 except IndexError as e:
-                    m2m_entity = self.create_prov_record(kwargs["model"], kwargs["model"].objects.get(pk=pk))
+                    entity_in_m2m = self.create_prov_record(kwargs["model"], kwargs["model"].objects.get(pk=pk))
 
-                self.create_relation(entity_with_m2m, m2m_entity, prov.ProvMembership)
+                self.create_relation(m2m_entity, entity_in_m2m, prov.ProvMembership)
 
     def connect_signals(self):
         """
         Connects the Django Signals pre_save, post_save and m2m_changed with every model that is given in the settings.
         """
+        from django.apps import apps
         for model in [*self.entities, *self.agents]:
-            from django.apps import apps
-            model = apps.get_model(model)
+            try:
+                model = apps.get_model(model)
+            except LookupError:
+                print(f"Model {model} not existing. Please remove it from the settings.", file=sys.stderr)
+                sys.exit(-1)
             if model._meta.many_to_many:
                 for m2m in model._meta.many_to_many:
                     sender = m2m.remote_field.through
@@ -127,10 +146,13 @@ class ProvenanceGenerator:
         """
         self.executing_activities = list()
         self.document = prov.ProvDocument()
-        self.document.set_default_namespace(self.default_namespace)
+        if self.default_namespace is not None:
+            self.document.set_default_namespace(self.default_namespace)
+        else:
+            print(f"No default namespace added. Please add one to the settings.", file=sys.stderr)
+            sys.exit(-1)
         for name in settings.PROVENANCE["NAMESPACES"]["EXTRA"]:
             self.add_extra_namespace(name)
-        self.add_extra_namespace("sys")
 
     def add_extra_namespace(self, extra_ns):
         """
@@ -169,7 +191,7 @@ class ProvenanceGenerator:
         for f in obj._meta.fields:
             new_attribute = (f'{obj._meta.app_label}:{f.attname}', str(getattr(obj, f.attname)))
             attributes.append(new_attribute)
-        identifier = f"{obj._meta.app_label}:{obj._meta.object_name}-{obj.id}-{datetime.datetime.now()}"
+        identifier = f"{obj._meta.app_label}:{obj._meta.object_name}-{obj.id}-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')}"
 
         try:
             last_similar_record = self.filter_prov_objects(obj._meta.app_label, obj._meta.object_name, obj.id)[-1]
@@ -234,14 +256,14 @@ class ProvenanceGenerator:
     def create_foreign_key_entry(self, entity, foreign_model, foreign_pk):
         """
         Creates a related ProvRecord for an existing entity. This ProvRecord is accessed through a foreign key in the original entity.
-        :param entity: The entity which has the foreign key field
+        :param entity: The entity which has the foreign key field, identifier as str
         :param foreign_model: ModelBase class of the foreign key instance
         :param foreign_pk: Primary key of the foreign key instance
         """
         foreign_key_obj = foreign_model.objects.get(pk=foreign_pk)
         identifier = self.create_prov_record(foreign_model, foreign_key_obj)
         if foreign_model._meta.label in self.entities:
-            self.create_relation(entity.identifier._str, identifier, prov.ProvMembership)
+            self.create_relation(entity, identifier, prov.ProvMembership)
         elif foreign_model._meta.label in self.agents or (
                 "auth" in settings.PROVENANCE["NAMESPACES"]["EXTRA"] and foreign_model._meta.app_label == "auth"):
             self.create_relation(entity.identifier._str, identifier, prov.ProvAttribution)
@@ -250,18 +272,24 @@ class ProvenanceGenerator:
         """
         :param parent_entity: Parent ProvEntity of which the m2m field originates
         :param obj: (ModelBase) Corresponding Object to the Parent Entity
-        :param m2m_field: str Field for which the new entity shall be generated
+        :param m2m_field: ManyToManyField for which the new entity shall be generated
         :return: ProvEntity
         """
         attributes = [(prov.PROV_TYPE, f"{obj._meta.app_label}:{m2m_field}"),
                       (f'{obj._meta.app_label}:model', str(m2m_field.model)),
-                      (f'{obj._meta.app_label}:model id', str(obj.id)),
+                      (f'{obj._meta.app_label}:model_id', str(obj.id)),
                       (f'{obj._meta.app_label}:related_model', str(m2m_field.related_model))]
-        identifier = f"{obj._meta.app_label}:{obj._meta.object_name}_{m2m_field.attname}-{obj.id}-{datetime.datetime.now()}"
+        identifier = f"{obj._meta.app_label}:{obj._meta.object_name}_{m2m_field.attname}-{obj.id}-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')}"
+        try:
+            last_similar_record = self.filter_prov_objects(obj._meta.app_label, f"{obj._meta.object_name}_{m2m_field.attname}", obj.id)[-1]
+            if self.check_is_already_existing(last_similar_record, attributes):
+                return last_similar_record.identifier._str
+        except IndexError as e:
+            pass
         if obj._meta.label in self.entities:
             entity = self.document.entity(identifier, attributes)
-            self.create_relation(parent_entity.identifier._str, identifier, prov.ProvMembership)
-        return entity
+            self.create_relation(parent_entity, identifier, prov.ProvMembership)
+        return entity.identifier._str
 
     def check_foreign_keys(self, sender, instance):
         """
@@ -335,13 +363,14 @@ class ProvenanceGenerator:
         Exports the most recent document into the formats that are declared in settings.py
         """
         output = settings.PROVENANCE["OUTPUT"]
-        filename = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        try:
-            path = output["PATH"]
-            os.makedirs(path, exist_ok=True)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            path = "."
+        filename = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')
+        path = output["PATH"]
+        if path is not None:
+            try:
+                os.makedirs(path, exist_ok=True)
+            except Exception as e:
+                print(e, file=sys.stderr)
+                path = None
 
         for serialization in output["SERIALIZE"]:
             if serialization == "n" or serialization == "txt":
@@ -351,17 +380,28 @@ class ProvenanceGenerator:
                 else:
                     print(self.document.get_provn())
             elif serialization == "rdf" or serialization == "json" or serialization == "xml":
+                content = self.document.serialize(format=f"{serialization}")
                 if path:
-                    self.document.serialize(f"{path}{filename}.{serialization}")
+                    with open(f"{path}{filename}.{serialization}", "w") as file:
+                        file.write(content)
                 else:
-                    print(self.document.serialize(format=f"{serialization}"))
+                    print(content)
+            else:
+                print(f"'{serialization}' is not a valid serialization format. Please adapt your settings.py.",
+                      file=sys.stderr)
 
         for graphic in output["GRAPHIC"]:
-            if path:
-                if graphic == "png" or graphic == "svg" or graphic == "pdf":
+
+            if graphic == "png" or graphic == "svg" or graphic == "pdf":
+                if path:
                     self.document.plot(f"{path}{filename}.{graphic}")
+                else:
+                    print(f"'Without a path, no graphic can be printed. Please adapt your settings.py",
+                          file=sys.stderr)
             else:
-                self.document.plot()
+                print(f"'{graphic}' is not a valid graphical output format. Please adapt your settings.py.",
+                      file=sys.stderr)
+
 
     def activity(self, name=None):
         """
@@ -381,6 +421,7 @@ class ProvenanceGenerator:
             else:
                 _name = name
 
+            @wraps(func)
             def wrapped_func(*args, **kwargs):
                 """
                 Captures the execution of different decorated Views and functions.
@@ -398,13 +439,15 @@ class ProvenanceGenerator:
                 attributes = [(prov.PROV_TYPE, f"{label}:func {func}")]
                 attributes.extend(get_system_info_attributes("sys"))
 
+                arg_length_check = lambda s: f"{s[:self.max_arg_length]}..." if len(s) > self.max_arg_length else s
+
+                # append args and kwargs the orig func got called with
                 if len(args) > 0:
-                    for i, arg in enumerate(args):
-                        attributes.append((f"{label}:args[{i}]", str(arg)))
+                    attributes.extend((f"{label}:args-{i}", arg_length_check(str(arg))) for i, arg in enumerate(args))
                 if len(kwargs) > 0:
-                    for i, kwarg in enumerate(kwargs):
-                        attributes.append((f"{label}:kwargs[{i}]-\'{kwarg}\'", str(kwargs[kwarg])))
-                identifier = f"{label}:{_name}-{start_time}"
+                    attributes.extend((f"{label}:kwargs-{i}-{kwarg}", arg_length_check(str(kwargs[kwarg]))) for i, kwarg in enumerate(kwargs))
+
+                identifier = f"{label}:{_name}-{start_time.strftime('%Y-%m-%d_%H-%M-%S-%f')}"
 
                 self.executing_activities.append(identifier)
                 result = func(*args, **kwargs)

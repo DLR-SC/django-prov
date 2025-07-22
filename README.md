@@ -1,3 +1,5 @@
+![pipeline](https://gitlab.dlr.de/ssa/django-prov/badges/main/pipeline.svg)
+![coverage](https://gitlab.dlr.de/ssa/django-prov/badges/main/coverage.svg)
 
 # django-prov
 
