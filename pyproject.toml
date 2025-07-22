@@ -12,7 +12,7 @@ requires-python = ">=3.8"
 license = {text = "License :: Other/Proprietary License"}
 dependencies = [
     "Django",
-    "prov[dot]",
+    "prov[dot]==2.0.1",
 ]
 classifiers = [
     "Framework :: Django",
@@ -30,6 +30,9 @@ test = [
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
 
 [tool.setuptools.dynamic]
 version = {attr = "django_prov.__version__"}
