@@ -1,6 +1,3 @@
-![pipeline](https://gitlab.dlr.de/ssa/django-prov/badges/main/pipeline.svg)
-![coverage](https://gitlab.dlr.de/ssa/django-prov/badges/main/coverage.svg)
-
 # django-prov
 
 django-prov is a Django app to capture Provenance related data in your Django project. It complies to the [W3C PROV Data Model](https://www.w3.org/TR/2013/REC-prov-dm-20130430/).
@@ -46,3 +43,13 @@ generator = ProvenanceGenerator.get("")
 4. Choose the output formats that fit to your needs. For the available formats see the [Configuration](docs/configuration.md#Serialization):
 
 5. Start your work and the Prov-Documents will be generated into your specified directory.
+
+## Build status
+
+### Develop
+![pipeline](https://gitlab.dlr.de/ssa/django-prov/badges/develop/pipeline.svg)
+![coverage](https://gitlab.dlr.de/ssa/django-prov/badges/develop/coverage.svg)
+
+### Main
+![pipeline](https://gitlab.dlr.de/ssa/django-prov/badges/main/pipeline.svg)
+![coverage](https://gitlab.dlr.de/ssa/django-prov/badges/main/coverage.svg)
