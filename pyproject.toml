@@ -25,7 +25,9 @@ dynamic = ["version", "readme"]
 
 [project.optional-dependencies]
 test = [
-    "coverage"
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
 ]
 
 [tool.setuptools]
@@ -37,3 +39,26 @@ where = ["."]
 [tool.setuptools.dynamic]
 version = {attr = "django_prov.__version__"}
 readme = {file = ["README.rst"]}
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "example.settings"
+
+[tool.coverage.run]
+branch = true
+data_file = "build/coverage"
+source_pkgs = ["django_prov"]
+
+[tool.coverage.report]
+include = [
+    "*/django_prov/*"
+]
+omit = [
+    "*__init__.py"
+    ]
+
+[tool.coverage.html]
+directory = "build/html-coverage"
+title = "Pytest Coverage Report"
+
+[tool.coverage.xml]
+output = "build/coverage.xml"
