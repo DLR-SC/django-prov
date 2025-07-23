@@ -44,6 +44,10 @@ generator = ProvenanceGenerator.get("")
 
 5. Start your work and the Prov-Documents will be generated into your specified directory.
 
+## Changes
+
+Please see [CHANGELOG.md](CHANGELOG.md) for notable changes.
+
 ## Build status
 
 ![pipeline](https://gitlab.dlr.de/ssa/django-prov/badges/main/pipeline.svg)

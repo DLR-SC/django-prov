@@ -68,6 +68,7 @@ publish-to-gitlab:
   variables:
     PYPI_GITLAB: https://gitlab-ci-token:$CI_JOB_TOKEN@gitlab.dlr.de/api/v4/projects/11169/packages/pypi
   script:
+    - pip install twine
     - twine upload --repository-url $PYPI_GITLAB --verbose dist/django_prov*.whl
   rules:
     - !reference [.default_publish_rules, rules]
@@ -77,6 +78,7 @@ publish-to-artifactory:
   variables:
     PYPI_INTERNAL: https://$ARTIFACTORY_AUTH@artifacts.dlr.de/artifactory/api/pypi/$PYPI_LOCAL
   script:
+    - pip install twine
     - twine upload --repository-url $PYPI_INTERNAL --verbose dist/django_prov*.whl
   rules:
     - !reference [.default_publish_rules, rules]
