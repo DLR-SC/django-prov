@@ -1,5 +1,30 @@
 # Changelog 
 
+## Version 0.2 (2025-12-08)
+
+Introduces an improved ProvenanceGenerator, the new ProvenanceGeneratorConfiguration and patches.
+
+### ProvenanceGenerator
+
+- The ProvenanceGenerator is now configured using a ProvenanceGeneratorConfiguration
+- Fields of Django objects can be specified for reducing the overhead
+- System information recording can be specified
+- added unit and integration tests
+
+### ProvenanceGeneratorConfiguration
+- Specifies entities, agents, namespaces, output and extras
+- Validates given configurations
+- Added unit and integration tests
+
+### Patches
+- Improved edge case and Exception handling
+  - Improved relations between two agents
+  - Improved backward connection of existing ProvRecords
+- Improved internal object representation
+  - Improved namespace handling
+  - Improved output handling
+- Made maximum field value length settable 
+
 ## Version 0.1.1 (2025-07-23)
 
 Patches, example application and initial Artifactory release.

@@ -6,6 +6,8 @@ from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Field
 from prov.identifier import Namespace
 
+from django_prov.utils import get_system_info_attributes
+
 
 class ProvenanceGeneratorConfigurationException(Exception):
     """
@@ -57,6 +59,8 @@ class ProvenanceGeneratorConfiguration:
                 raise ProvenanceGeneratorConfigurationException("The default namespace has to be of type <class 'str'>.")
             if isinstance(extra_ns, list):
                 for prefix in extra_ns:
+                    if prefix == "sys":
+                        self.extras["GET_SYSTEM_INFO"] = get_system_info_attributes
                     namespace = Namespace(prefix, f"{self.default_namespace.uri}{prefix}/")
                     if namespace not in self.namespaces:
                         self.namespaces.append(namespace)
@@ -199,6 +203,32 @@ class ProvenanceGeneratorConfiguration:
                     f"Section 'MAX_ARG_LENGTH' is not correctly declared in the settings. "
                     f"The value of 'MAX_ARG_LENGTH' has to be of type <class 'int'>.\n"
                     f"Provided type: {type(max_arg_length)}")
+
+            max_field_value_length = extras.get("MAX_FIELD_VALUE_LENGTH")
+            if isinstance(max_field_value_length, (int, type(None))):
+                self.extras["MAX_FIELD_VALUE_LENGTH"] = max_field_value_length
+            else:
+                raise ProvenanceGeneratorConfigurationException(
+                    f"Section 'MAX_FIELD_VALUE_LENGTH' is not correctly declared in the settings. "
+                    f"The value of 'MAX_FIELD_VALUE_LENGTH' has to be of type <class 'int'>.\n"
+                    f"Provided type: {type(max_field_value_length)}")
+
+            sys_info_func = extras.get("GET_SYSTEM_INFO")
+            if callable(sys_info_func):
+                if any(ns.prefix == "sys" for ns in self.namespaces):
+                    self.extras["GET_SYSTEM_INFO"] = sys_info_func
+                else:
+                    raise ProvenanceGeneratorConfigurationException(
+                        f"A function to track system information for executing activities was provided, "
+                        f"but 'sys' is not part of your Namespaces. Please add 'sys' to your namespaces.")
+            elif isinstance(sys_info_func, type(None)):
+                pass
+            else:
+                raise ProvenanceGeneratorConfigurationException(
+                    f"Section 'GET_SYSTEM_INFO' is not correctly declared in the settings. "
+                    f"'GET_SYSTEM_INFO' has to be a callable. \n"
+                    f"Provided type: {type(sys_info_func)}")
+
 
     def validate_settings(self):
         """

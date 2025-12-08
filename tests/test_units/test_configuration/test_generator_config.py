@@ -3,11 +3,11 @@ import re
 import pytest
 from django.apps import apps
 from django.db.models import Field
-from django.test import TestCase
 from prov.identifier import Namespace
 
 from django_prov.configuration import ProvenanceGeneratorConfiguration, ProvenanceGeneratorConfigurationException, \
     ProvenanceGeneratorConfigurationWarning
+from django_prov.utils import get_system_info_attributes
 
 from tests.utils.configs import DEFAULT_PROVENANCE
 
@@ -76,6 +76,8 @@ class TestProvenanceGeneratorConfiguration:
         assert prov_configuration.default_namespace.uri == DEFAULT_PROVENANCE["NAMESPACES"]["DEFAULT"]
         assert isinstance(prov_configuration.namespaces, list)
         assert len(prov_configuration.namespaces) == 5
+        assert callable(prov_configuration.extras["GET_SYSTEM_INFO"])
+        assert prov_configuration.extras["GET_SYSTEM_INFO"] == get_system_info_attributes
 
         for namespace in prov_configuration.namespaces:
             assert isinstance(namespace, Namespace)
@@ -479,11 +481,15 @@ class TestProvenanceGeneratorConfiguration:
         """
         prov_configuration = ProvenanceGeneratorConfiguration()
 
-        config = {"OTHER": {"MAX_ARG_LENGTH": 100}}
+        config = {"OTHER": {"MAX_ARG_LENGTH": 100, "MAX_FIELD_VALUE_LENGTH": 50, "GET_SYSTEM_INFO": get_system_info_attributes}}
         prov_configuration._configuration = config
+        prov_configuration.namespaces = [Namespace("sys", "example.org/sys/")]
         prov_configuration._validate_extras()
 
         assert prov_configuration.extras["MAX_ARG_LENGTH"] == 100
+        assert prov_configuration.extras["MAX_FIELD_VALUE_LENGTH"] == 50
+        assert callable(prov_configuration.extras["GET_SYSTEM_INFO"])
+
 
     @staticmethod
     def test_validate_extras_type_error():
@@ -500,3 +506,29 @@ class TestProvenanceGeneratorConfiguration:
                     "The value of 'MAX_ARG_LENGTH' has to be of type <class 'int'>.\n"
                     "Provided type: <class 'str'>"):
             prov_configuration._validate_extras()
+
+        config = {"OTHER": {"MAX_FIELD_VALUE_LENGTH": "wrong_type"}}
+        prov_configuration._configuration = config
+
+        with pytest.raises(ProvenanceGeneratorConfigurationException, match="Section 'MAX_FIELD_VALUE_LENGTH' is not correctly declared in the settings. "
+                    "The value of 'MAX_FIELD_VALUE_LENGTH' has to be of type <class 'int'>.\n"
+                    "Provided type: <class 'str'>"):
+            prov_configuration._validate_extras()
+
+        config = {"OTHER": {"GET_SYSTEM_INFO": get_system_info_attributes}}
+        prov_configuration._configuration = config
+
+        with pytest.raises(ProvenanceGeneratorConfigurationException,
+                           match="A function to track system information for executing activities was provided, "
+                                 "but 'sys' is not part of your Namespaces. Please add 'sys' to your namespaces."):
+            prov_configuration._validate_extras()
+
+        config = {"OTHER": {"GET_SYSTEM_INFO": "wrong_type"}}
+        prov_configuration._configuration = config
+        prov_configuration.namespaces = [Namespace("sys", "example.org/sys/")]
+
+        with pytest.raises(ProvenanceGeneratorConfigurationException, match="Section 'GET_SYSTEM_INFO' is not correctly declared in the settings. "
+                    f"'GET_SYSTEM_INFO' has to be a callable. \nProvided type: <class 'str'>"):
+            prov_configuration._validate_extras()
+
+

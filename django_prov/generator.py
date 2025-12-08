@@ -1,10 +1,10 @@
-import getpass
-import platform
 import sys
 import warnings
 import datetime
 
 from functools import wraps
+from logging import exception
+from pathlib import Path
 
 import prov.model as prov
 from django.conf import settings
@@ -15,18 +15,6 @@ from django.db.models import ForeignKey
 from django.db.models.signals import *
 
 from django_prov.configuration import ProvenanceGeneratorConfiguration
-
-
-def get_system_info_attributes(label):
-    """
-    Returns a List of attributes customized for the ProvDocument.
-    :param label: Prefix of the namespace that has to be taken
-    :return: List of Attributes
-    """
-    attributes = [(f'{label}:python_version', sys.version)]
-    attributes.append((f'{label}:os', platform.platform()))
-    attributes.append((f'{label}:os_username', getpass.getuser()))
-    return attributes
 
 
 class ProvenanceGeneratorException(Exception):
@@ -49,6 +37,8 @@ class ProvenanceGenerator:
         self.config = None
         self.executing_activities = list()
         self.document = prov.ProvDocument()
+        self.arg_length_check = lambda s: s
+        self.max_field_value_length = lambda s: s
 
         self.clean_state(config)
 
@@ -74,6 +64,10 @@ class ProvenanceGenerator:
 
         self.executing_activities = list()
         self.document = prov.ProvDocument()
+        self.arg_length_check = lambda s: s
+        self.max_field_value_length = lambda s: s
+
+        self.set_max_lengths()
 
         self.connect_signals()
         self.create_new_document()
@@ -189,9 +183,24 @@ class ProvenanceGenerator:
         for namespace in self.config.namespaces:
             self.document.add_namespace(namespace)
 
+    def set_max_lengths(self):
+        """
+        Sets the maximum lengths to record of function call arguments and django object fields.
+        """
+
+        arg_length_check = self.config.extras.get("MAX_ARG_LENGTH")
+        if arg_length_check:
+            self.arg_length_check = lambda s: f"{s[:arg_length_check]}..." if len(s) > arg_length_check else s
+
+        max_field_value_length = self.config.extras.get("MAX_FIELD_VALUE_LENGTH")
+        if max_field_value_length:
+            self.max_field_value_length = lambda s: f"{s[:max_field_value_length]}..." if len(s) > max_field_value_length else s
+
+
     def create_m2m_entries(self, sender, instance, attributes):
         """
         Appends attributes of a ProvRecord for every ManyToManyField that is existing in the referenced instance.
+        Deprecated.
         :param sender: ModelBase class of the instance
         :param instance: Instance of the given class
         :param attributes: Already existing List of Attributes for a new ProvRecord
@@ -222,7 +231,7 @@ class ProvenanceGenerator:
             return None
 
         for f in fields:
-            new_attribute = (f'{obj._meta.app_label}:{f.attname}', str(getattr(obj, f.attname)))
+            new_attribute = (f'{obj._meta.app_label}:{f.attname}', self.max_field_value_length(str(getattr(obj, f.attname))))
             attributes.append(new_attribute)
         identifier = f"{obj._meta.app_label}:{obj._meta.object_name}-{obj.id}-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')}"
 
@@ -414,6 +423,8 @@ class ProvenanceGenerator:
         """
         filename = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')
         path = self.config.output.get("PATH")
+        if path:
+            path = Path(path).as_posix() + "/"
 
         for serialization in self.config.output["SERIALIZE"]:
             if serialization == "txt":
@@ -432,7 +443,6 @@ class ProvenanceGenerator:
             else:
                 warnings.warn("'Without a path, no graphic can be printed. Please adapt your configuration.",
                       ProvenanceGeneratorWarning)
-
 
 
     def activity(self, name=None):
@@ -469,18 +479,21 @@ class ProvenanceGenerator:
                     label = func.__module__.split(".")[-2]
                 # check if post or get request for excluding get? (further work)
                 attributes = [(prov.PROV_TYPE, f"{label}:func {func}")]
-                attributes.extend(get_system_info_attributes("sys"))
 
-                if self.config.extras.get("MAX_ARG_LENGTH"):
-                    arg_length_check = lambda s: f"{s[:self.config.extras['MAX_ARG_LENGTH']]}..." if len(s) > self.config.extras['MAX_ARG_LENGTH'] else s
-                else:
-                    arg_length_check = lambda s: s
+                sys_info_func = self.config.extras.get("GET_SYSTEM_INFO")
+                if sys_info_func:
+                    try:
+                        attributes.extend(sys_info_func())
+                    except Exception as e:
+                        warnings.warn(f"The given 'GET_SYSTEM_INFO' function {sys_info_func} has not been executed successfully. "
+                                      f"The return value has to be a list of tuples.")
+
 
                 # append args and kwargs the orig func got called with
                 if len(args) > 0:
-                    attributes.extend((f"{label}:args-{i}", arg_length_check(str(arg))) for i, arg in enumerate(args))
+                    attributes.extend((f"{label}:args-{i}", self.arg_length_check(str(arg))) for i, arg in enumerate(args))
                 if len(kwargs) > 0:
-                    attributes.extend((f"{label}:kwargs-{i}-{kwarg}", arg_length_check(str(kwargs[kwarg]))) for i, kwarg in enumerate(kwargs))
+                    attributes.extend((f"{label}:kwargs-{i}-{kwarg}", self.arg_length_check(str(kwargs[kwarg]))) for i, kwarg in enumerate(kwargs))
 
                 identifier = f"{label}:{_name}-{start_time.strftime('%Y-%m-%d_%H-%M-%S-%f')}"
 
