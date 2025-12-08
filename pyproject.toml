@@ -28,6 +28,7 @@ test = [
     "pytest",
     "pytest-django",
     "pytest-cov",
+    "hypothesis"
 ]
 
 [tool.setuptools]

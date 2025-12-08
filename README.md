@@ -4,7 +4,7 @@ django-prov is a Django app to capture Provenance related data in your Django pr
 
 ## Setup
 
-The package was built with Python 3.9 and uses the libraries [Django](https://www.djangoproject.com/) and [prov](https://prov.readthedocs.io/en/latest/). You can install it with:
+The package was built with Python 3.12 and uses the libraries [Django](https://www.djangoproject.com/) and [prov](https://prov.readthedocs.io/en/latest/). You can install it with:
 
 ```shell
 pip install django-prov
@@ -25,8 +25,8 @@ INSTALLED_APPS = [
 
 ```python
 PROVENANCE = {
-    "ENTITIES": ["...",],
-    "AGENTS": ["...", ],
+    "ENTITIES": {"example.Borrowing":True,},
+    "AGENTS": {"example.Student": True, },
     "NAMESPACES": {"...", },
     "OUTPUT": {"...", },
 }
@@ -37,7 +37,7 @@ PROVENANCE = {
 ```python
 from django_prov.generator import ProvenanceGenerator
 
-generator = ProvenanceGenerator.get("")
+generator = ProvenanceGenerator.get()
 ```
 
 4. Choose the output formats that fit to your needs. For the available formats see the [Configuration](docs/configuration.md#Serialization):

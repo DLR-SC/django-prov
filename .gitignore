@@ -1,4 +1,5 @@
 provenance_files/
+*.provn
 db.sqlite3
 
 __pycache__
@@ -30,3 +31,4 @@ env38noairflow/
 env39/
 env3x/
 
+.hypothesis/

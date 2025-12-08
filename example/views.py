@@ -1,5 +1,6 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, CreateView, UpdateView
@@ -7,7 +8,7 @@ from .decorators import user_is_student, user_is_librarian
 from example.models import *
 from django_prov.generator import ProvenanceGenerator
 
-generator = ProvenanceGenerator.get("")
+generator = ProvenanceGenerator.get()
 
 
 def print_document_on_click(request):
@@ -101,7 +102,7 @@ class BookListView(ListView):
     def get_queryset(self):
         return Book.objects.all()
 
-@generator.activity(name="foo2")
+@generator.activity(name="foo2") #, additional_tracking={"header_info": response.header}, additional_tracking={"header_info": response.header}
 def return_borrowing(borrowing):
     borrowing.status = "R"
     borrowing.bor_returned_date = datetime.date.today()
@@ -129,6 +130,14 @@ def return_all_borrowings_auto(request):
 
 @generator.activity(name="foo",)
 def return_a_borrowing(request, pk=None):
-    return_borrowing(get_object_or_404(Borrowing, id=pk))
-    return HttpResponseRedirect(reverse('returning.list'))
-
+    borrowing = get_object_or_404(Borrowing, id=pk)
+    try:
+        person = Librarian.objects.get(person=request.user)
+        return_borrowing(borrowing)
+        return HttpResponseRedirect(reverse('returning.list'))
+    except ObjectDoesNotExist as e:
+        person = Student.objects.get(person=request.user)
+        if person.id == borrowing.student_id:
+            return_borrowing(borrowing)
+            return HttpResponseRedirect(reverse('returning.list'))
+        return HttpResponseForbidden("Access denied")
