@@ -114,13 +114,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'index'
 
 PROVENANCE = {
-    "ENTITIES": [
-        'example.Book',
-        'example.Borrowing',
-        "example.Student",
-        "example.Librarian",
-    ],
-    "AGENTS": [],
+    "ENTITIES": {
+        'example.Book': ['isbn', 'is_borrowed', 'title'],
+        'example.Borrowing': ['student', 'responsible_librarian', 'ordered_books', 'status'],
+
+    },
+    "AGENTS": {"example.Student": True,
+        "example.Librarian": True,},
     "NAMESPACES": {
         "DEFAULT": f"{ROOT_URLCONF.split('.')[0]}.org/",
         "EXTRA": [
@@ -138,7 +138,7 @@ PROVENANCE = {
         # captures files in a directory on django-project level
         "PATH": f"provenance_files/",
         "SERIALIZE": [
-            "n",
+            "provn",
 
         ],
         "GRAPHIC": [

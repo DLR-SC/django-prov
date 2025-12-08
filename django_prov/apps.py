@@ -10,6 +10,6 @@ class ProvCaptureConfig(AppConfig):
     generator_instance = None
 
     def ready(self):
-        from . import generator
+        from django_prov import generator
 
-        self.generator_instance = generator.ProvenanceGenerator.get(settings.PROVENANCE["NAMESPACES"]["DEFAULT"])
+        self.generator_instance = generator.ProvenanceGenerator.get()
