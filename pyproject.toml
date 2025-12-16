@@ -30,6 +30,10 @@ test = [
     "pytest-cov",
     "hypothesis"
 ]
+develop = [
+    "twine",
+    "sphinx"
+]
 
 [tool.setuptools]
 include-package-data = true

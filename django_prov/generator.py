@@ -141,7 +141,7 @@ class ProvenanceGenerator:
                             m2m_entity = self.create_many_to_many_record(parent_entity_of_m2m_entity, instance, field)
 
             # Create Entities for entries in m2m_fields
-            if kwargs["model"]._meta.label in self.config.entities:
+            if kwargs["model"]._meta.label in self.config.entities or self.config.agents:
                 for pk in kwargs["pk_set"]:
                     try:
                         entity_in_m2m = list(self.filter_prov_objects(kwargs["model"]._meta.app_label, kwargs["model"]._meta.object_name, pk))[-1].identifier._str
@@ -322,7 +322,7 @@ class ProvenanceGenerator:
         foreign_key_obj = foreign_model.objects.get(pk=foreign_pk)
         identifier = self.create_prov_record(foreign_model, foreign_key_obj)
         if identifier:
-            if (foreign_model._meta.label and foreign_key_obj._meta.label) in self.config.entities:
+            if foreign_key_obj._meta.label in self.config.entities:
                 self.create_relation(existing, identifier, prov.ProvMembership)
             elif foreign_model._meta.label in self.config.agents or (
                     any(ns.prefix == "auth" for ns in self.config.namespaces) and foreign_model._meta.app_label == "auth"):
@@ -343,7 +343,10 @@ class ProvenanceGenerator:
                       (f'{obj._meta.app_label}:model_id', str(obj.id)),
                       (f'{obj._meta.app_label}:related_model', str(m2m_field.related_model))]
         identifier = f"{obj._meta.app_label}:{obj._meta.object_name}_{m2m_field.attname}-{obj.id}-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')}"
-        if obj._meta.label in self.config.entities:
+        if obj._meta.label in self.config.entities or self.config.agents:
+            # Do not follow Users ManyToManyFields like Groups or permissions
+            if identifier.startswith("auth"):
+                return None
             entity = self.document.entity(identifier, attributes)
             self.create_relation(parent_entity, identifier, prov.ProvMembership)
             return entity.identifier._str
