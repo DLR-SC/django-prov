@@ -16,6 +16,7 @@ You can install it from PyPi hosted on artifacts.dlr.de with the following comma
 - The extra argument :code:`--index-url` uses the bacardi-pypi-local-release which contains internal packages like django-prov.
 - The extra argument :code:`--extra-index-url` uses the bacardi-pypi-remote which contains mirrored external packages like Django and prov.
 
+.. _development-installation:
 
 Development installation
 ------------------------

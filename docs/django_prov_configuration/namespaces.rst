@@ -1,5 +1,5 @@
-How to set the correct namespaces
-=================================
+How to set correct namespaces
+=============================
 
 Namespaces are a way associate names with a specific context by mapping them to a unique identifier, so that it is possible to use the same name in different contexts without conflicts.
 
@@ -7,9 +7,8 @@ A namespace maps a prefix to a URI, allowing compact names to represent full uni
 This allows to resolve the qualified name to a full URI later on.
 
 
-How to use the correct namespaces for your Django app
------------------------------------------------------
-
+Supported namespaces for your Django app
+----------------------------------------
 The Configuration you use to record provenance needs to have at least two namespaces to work.
 
 Namespaces are declared in the :code:`"NAMESPACES"` section in the :code:`PROVENANCE` dictionary of your Django app. This section also needs to be divided in to two further sections:

@@ -23,8 +23,8 @@ You can get an instance of the ProvenanceGenerator using the class method ``get(
     generator_instance = ProvenanceGenerator.get()
 
 
-How to record functions?
-------------------------
+How to record functions
+-----------------------
 
 To record each execution of a function, you need to wrap it with the `ProvenanceGenerator.activity()` decorator:
 
@@ -38,8 +38,8 @@ You can specify a useful name for your function. If you don't specify a name, th
 
 If a function is calling another function that got decorated too, the ProvenanceGenerator is able to correctly relate them using a `Communication`_
 
-How to record classes?
-----------------------
+How to record classes
+---------------------
 
 Decorating a single class and all of its methods with a single decorator is currently not supported.
 
@@ -60,8 +60,8 @@ It is still possible to decorate each method itself, using the same decorator as
 
 .. _activities-django-views-label:
 
-How to record Django class-based views?
----------------------------------------
+How to record Django class-based views
+--------------------------------------
 
 Similarly to normal classes, it is not possible to decorate a Django class-based view with a single decorator. Additionally, django-prov is tested decorating the ``dispatch()`` method of a Django class-based-view:
 

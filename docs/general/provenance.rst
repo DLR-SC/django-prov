@@ -1,5 +1,5 @@
-What is provenance?
-===================
+About Provenance
+================
 
 The W3C defines provenance as follows: *Provenance is defined as a record that describes the people, institutions, entities and activities involved in producing, influencing, or delivering a piece of data or a thing.* 
 
@@ -27,13 +27,13 @@ Additionally there are seven core relations:
 - An activity association is an assignment of responsibility to an agent for an activity, indicating that the agent had a role in the activity.
 - Delegation is the assignment of authority and responsibility to an agent (by itself or by another agent) to carry out a specific activity as a delegate or representative, while the agent it acts on behalf of retains some responsibility for the outcome of the delegated work.
 
-The content of this page is cited from `PROV-DM - The PROV Data Model`_. 
+The content of this section cites `PROV-DM - The PROV Data Model`_.
 
 .. _PROV-DM - The PROV Data Model: https://www.w3.org/TR/2013/REC-prov-dm-20130430/
 
 
-How to record provenance in your project?
------------------------------------------
+How to record provenance in your project
+----------------------------------------
 
 Before recording provenance in your project, you need to be sure about the questions you want to answer. Questions that fit to an example application can be found in :ref:`example-questions`.
 

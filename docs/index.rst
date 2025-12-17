@@ -3,14 +3,24 @@ Django Provenance documentation
 
 Welcome to the documentation of Django Provenance (django-prov).
 
-Django-prov is a Django app to capture Provenance related data in your Django project. It complies to the `W3C PROV Data Model`_.
+.. include:: ../README.rst
+    :start-after: .. install-start
+    :end-before: .. install-end
+
+.. include:: ../README.rst
+    :start-after: .. usage-start
+    :end-before: .. usage-end
+
+.. include:: ../README.rst
+    :start-after: .. build-start
+    :end-before: .. build-end
+
+**Contents**
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-   django_prov/django_prov
-
-
-
-.. _W3C PROV Data Model: https://www.w3.org/TR/2013/REC-prov-dm-20130430/
+   general/toc.rst
+   django_prov_configuration/toc.rst
+   code_docs/toc.rst
+   CHANGELOG.rst

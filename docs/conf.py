@@ -9,7 +9,7 @@
 project = 'Django Provenance'
 copyright = '2025, German Aerospace Center (DLR)'
 author = 'German Aerospace Center (DLR)'
-release = '0.2.0'
+release = '0.2.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -30,4 +30,5 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
+
 # html_static_path = ['_static'] # Static files include CSS, JS files, images, custom HTML templates, etc.

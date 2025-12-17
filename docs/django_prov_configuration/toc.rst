@@ -1,9 +1,12 @@
 .. _config-toc-label:
+
 Configuring the ProvenanceGenerator
 ===================================
 
-Here some general information
+This chapter deals with the correct setup of the ProvenanceGenerator for your use case.
 
+
+**Contents**
 
 .. toctree::
    :maxdepth: 1
