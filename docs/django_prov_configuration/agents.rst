@@ -5,7 +5,7 @@ How to record agents
 
 The W3C defines agents as follows: *An agent is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity.*
 
-You can declare which of your own models you want to track as an agent by using the ``"AGENTS"`` section in the ``PROVENANCE`` dictionary of your Django app.
+You can declare which of your own models you want to track as an agent by using the ``"AGENTS"`` section in the configuration dictionary of your Django app.
 The ``"AGENTS"`` section has to be a dictionary. Each model that you want to track has to be a key in the dictionary.
 
 Similar to entities, there are two different ways to track your models as agents:
@@ -28,7 +28,7 @@ You can also mix both ways, which allows more specific recording of properties t
 ForeignKey fields
 ------------------
 
-ForeignKey fields are handled differently than standard django fields.
+ForeignKey fields are handled differently than standard Django fields.
 
 If a ForeignKey field of a model is specified explicitly or by setting the value to ``True``, the ProvenanceGenerator tries to follow the key to the related model.
 
@@ -38,7 +38,7 @@ If the related model is specified as an entity, the link will be an `Membership`
 ManyToMany fields
 -----------------
 
-ManyToMany fields are handled differently than standard django fields and ForeignKeys.
+ManyToMany fields are handled differently than standard Django fields and ForeignKeys.
 
 Since ManyToMany fields are stored in a different attribute of an object, the ProvenanceGenerator will always try to follow them if the model is specified in the configuration in any way.
 For each ManyToMany field, the ProvenanceGenerator creates an entity and links it to the original model via a `Membership`_.

@@ -1,7 +1,7 @@
 Code Documentation
 ==================
 
-Here some general information 2
+This chapter documents the code of Django Provenance.
 
 
 .. toctree::

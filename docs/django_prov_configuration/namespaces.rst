@@ -1,3 +1,5 @@
+.. _config-namespaces:
+
 How to set correct namespaces
 =============================
 
@@ -11,16 +13,16 @@ Supported namespaces for your Django app
 ----------------------------------------
 The Configuration you use to record provenance needs to have at least two namespaces to work.
 
-Namespaces are declared in the :code:`"NAMESPACES"` section in the :code:`PROVENANCE` dictionary of your Django app. This section also needs to be divided in to two further sections:
+Namespaces are declared in the :code:`"NAMESPACES"` section in the configuration dictionary of your Django app. This section also needs to be divided in to two further sections:
 
-1. :code:`"DEFAULT"`: contains your default URI which is used to resolve other prefixes to URIs. Recommendation: Use the name of your django project, e.g. :code:`"example.org/"`.
+1. :code:`"DEFAULT"`: contains your default URI which is used to resolve other prefixes to URIs. Recommendation: Use the name of your Django project, e.g. :code:`"example.org/"`.
 
 2. :code:`"EXTRA"`: contains the prefixes of every app of your project that you want to track. It depends on your use case to decide which of the namespaces you actually need. Recommendation: Use the name of the app that you want to track, e.g. :code:`"example"`.
 
     Furthermore, there are three optional namespace prefixes supported:
 
     - :code:`"auth"`: includes the recording of models from the Django authentication app, e.g. Users.
-    - :code:`"django"`: includes the recording of Djangos View Classes. For more information, see :ref:`activities-django-views-label`
+    - :code:`"django"`: includes the recording of Djangos class-based views. For more information, see :ref:`activities-django-views-label`
     - :code:`"sys"`: includes the recording of system information for every activity that is tracked. For more information, see: :ref:`extras-sys-info-label`
 
 

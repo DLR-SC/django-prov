@@ -12,6 +12,9 @@ Students are able to order books within a borrowing, which is then passed to a l
 After a period of time, the borrowing will be returned by either the student who borrowed it or any librarian.
 After that, the books can be ordered by another student.
 
+The example app can be found here: `Django Provenance - Example application`_
+
+.. _Django Provenance - Example application: https://gitlab.dlr.de/ssa/django-prov/-/tree/main/example
 
 .. _example-questions:
 

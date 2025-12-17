@@ -5,7 +5,7 @@ How to record activities
 
 The W3C defines activities as follows: *An activity is something that occurs over a period of time and acts upon or with entities; it may include consuming, processing, transforming, modifying, relocating, using, or generating entities.*
 
-In opposition to entities and agents, you do not define activities in your configuration. You need to manually specify an activity for each function or method whose execution should be recorded. In addition, recording the execution of Djangos View classes is done differently, too.
+In opposition to entities and agents, you do not define activities in your configuration. You need to manually specify an activity for each function or method whose execution should be recorded. In addition, recording the execution of Djangos class-based views is done differently, too.
 
 Getting the instance of the ProvenanceGenerator
 -----------------------------------------------
@@ -63,7 +63,7 @@ It is still possible to decorate each method itself, using the same decorator as
 How to record Django class-based views
 --------------------------------------
 
-Similarly to normal classes, it is not possible to decorate a Django class-based view with a single decorator. Additionally, django-prov is tested decorating the ``dispatch()`` method of a Django class-based-view:
+Similarly to normal classes, it is not possible to decorate a Django class-based view with a single decorator. Additionally, django-prov is tested decorating the ``dispatch()`` method of Djangos class-based views:
 
 .. code-block:: python
 
@@ -77,5 +77,10 @@ Using this decorator, you define the name of the method you want to decorate, in
 
 It is still possible to manually decorate other methods, but django-prov works best when decorating the ``dispatch()`` method.
 
+.. seealso::
+
+    Information on the method flowchart of Djangos class-based views can be found here: `Django - Base Views`_
+
+.. _Django - Base Views: https://docs.djangoproject.com/en/5.2/ref/class-based-views/base/#view
 
 .. _Communication: https://www.w3.org/TR/2013/REC-prov-dm-20130430/#term-Communication

@@ -3,8 +3,8 @@
 Changelog
 =========
 
-Version 0.2.1-dev
-------------------------
+Version 0.2..1 (17.12.2025)
+---------------------------
 
 Adds documentation pages and minor patches
 

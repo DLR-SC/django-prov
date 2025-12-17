@@ -26,13 +26,27 @@ You can install it from PyPi hosted on artifacts.dlr.de with the following comma
 - The extra argument :code:`--index-url` uses the bacardi-pypi-local-release which contains internal packages like django-prov.
 - The extra argument :code:`--extra-index-url` uses the bacardi-pypi-remote which contains mirrored external packages like Django and prov.
 
+.. important::
+
+    If you want to generate graphical output like SVG or PNG files, you also need to have graphviz installed:
+
+    .. code-block:: shell
+
+        apt install -y graphviz graphviz-dev
 
 .. seealso::
 
    - **Development Installation:** :ref:`development-installation`
 
-
 .. install-end
+
+**Important**
+
+If you want to generate graphical output like SVG or PNG files, you also need to have graphviz installed:
+
+.. code-block:: shell
+
+        apt install -y graphviz graphviz-dev
 
 **See also**
 
@@ -55,7 +69,7 @@ You need to follow three steps to start recording provenance in your app:
 
 1. Provide a configuration, e.g. via your settings.py.
 
-   - Define Namespaces, Output path and formats.
+   - Define namespaces, output path and formats.
    - Define the models that you want to track, either as entities or agents. The ProvenanceGenerator will then use `Djangos built-in signals`_ to record changes of your models objects in the database.
 
 2. Define activities that you want to track.
@@ -79,6 +93,13 @@ You need to follow three steps to start recording provenance in your app:
 
 .. _Configuration options: ./docs/django_prov_configuration/configuration_general.rst
 
+
+Documentation
+-------------
+
+The documentation of Django Provenance is available here: `Official Documentation`_
+
+.. _Official Documentation: https://ssa.pages.gitlab.dlr.de/django-prov/
 
 .. build-start
 
