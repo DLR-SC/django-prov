@@ -3,7 +3,6 @@ import warnings
 import datetime
 
 from functools import wraps
-from logging import exception
 from pathlib import Path
 
 import prov.model as prov
@@ -33,7 +32,6 @@ class ProvenanceGenerator:
         """
         Initializes the single ProvenanceGenerator instance.
         """
-
         self.config = None
         self.executing_activities = list()
         self.document = prov.ProvDocument()
@@ -44,6 +42,12 @@ class ProvenanceGenerator:
 
     @classmethod
     def reset_settings(cls, config=None):
+        """
+        Allows to reset the settings of a ProvenanceGenerator instance
+
+        :param config: New configuration. If None, the default config is taken from settings.py
+        :return: ProvenanceGenerator instance
+        """
         instance = cls.get(config)
         cls.reset_receivers()
         instance.clean_state(config)
@@ -51,10 +55,18 @@ class ProvenanceGenerator:
 
     @classmethod
     def reset_cls(cls):
+        """
+        Resets the class. Resets the instance and every connected Django signal.
+        """
         cls._instance = None
         cls.reset_receivers()
 
     def clean_state(self, config: dict | ProvenanceGeneratorConfiguration = None):
+        """
+        Sets up the ProvenanceGenerator instance. Applies the configuration, sets maximum value lengths and connects Django signals.
+
+        :param config: Configuration to apply. If None, the default config is taken from settings.py
+        """
         print("Initialized Generator")
         if config:
             self.config = config if isinstance(config, ProvenanceGeneratorConfiguration) \
@@ -74,6 +86,9 @@ class ProvenanceGenerator:
 
     @classmethod
     def reset_receivers(cls):
+        """
+        Clears all connected Django signals.
+        """
         pre_save.receivers.clear()
         post_save.receivers.clear()
         m2m_changed.receivers.clear()
@@ -91,7 +106,7 @@ class ProvenanceGenerator:
     def handle_post_save(self, sender, instance, **kwargs):
         """
         Receiver-function for the post_save-Signal.
-        :param sender: ModelBase class of the instance that got changed
+        :param sender: ModelBase of the instance that got changed
         :param instance: Instance that got changed
         :param kwargs: other with the signal passed kwargs
         """
@@ -102,7 +117,7 @@ class ProvenanceGenerator:
     def handle_pre_save(self, sender, instance, **kwargs):
         """
         Receiver-function for the pre_save-Signal.
-        :param sender: ModelBase class of the instance that is going to be changed
+        :param sender: ModelBase of the instance that is going to be changed
         :param instance: Instance that is going to be changed
         :param kwargs: other with the signal passed kwargs
         """
@@ -117,7 +132,7 @@ class ProvenanceGenerator:
     def handle_m2m_changed(self, sender, instance, **kwargs):
         """
         Receiver-function for the m2m_changed-Signal. If an m2m_changed is triggered, either a new ProvRecord is created or connected to an existing ProvRecord.
-        :param sender: ModelBase class of the instance
+        :param sender: ModelBase of the instance
         :param instance: Instance of the given class
         :param kwargs: other with the signal passed kwargs
         """
@@ -141,7 +156,7 @@ class ProvenanceGenerator:
                             m2m_entity = self.create_many_to_many_record(parent_entity_of_m2m_entity, instance, field)
 
             # Create Entities for entries in m2m_fields
-            if kwargs["model"]._meta.label in self.config.entities:
+            if kwargs["model"]._meta.label in self.config.entities or self.config.agents:
                 for pk in kwargs["pk_set"]:
                     try:
                         entity_in_m2m = list(self.filter_prov_objects(kwargs["model"]._meta.app_label, kwargs["model"]._meta.object_name, pk))[-1].identifier._str
@@ -201,7 +216,8 @@ class ProvenanceGenerator:
         """
         Appends attributes of a ProvRecord for every ManyToManyField that is existing in the referenced instance.
         Deprecated.
-        :param sender: ModelBase class of the instance
+
+        :param sender: ModelBase of the instance
         :param instance: Instance of the given class
         :param attributes: Already existing List of Attributes for a new ProvRecord
         :return: List of new Attributes
@@ -214,8 +230,10 @@ class ProvenanceGenerator:
 
     def create_prov_record(self, class_info, obj):
         """
-        Creates a ProvRecord (Entity or Agent) by a given class and object.
-        :param class_info: ModelBase class of the instance
+        Main logic. Creates a ProvRecord (ProvEntity or ProvAgent) by a given class and object.
+        Tries to connect the new record to older records with different ProvRelations.
+
+        :param class_info: ModelBase  of the instance
         :param obj: Instance of the given class
         :return: Identifier of a new or an existing ProvRecord
         """
@@ -245,7 +263,7 @@ class ProvenanceGenerator:
         if prov_type == prov.ProvEntity:
             self.document.entity(identifier, attributes)
             self.check_derivation(obj._meta.app_label, obj._meta.object_name, obj.id)
-            # Foreign Key check may result in an endless loop if there is a circle of foreign keys (further work)
+            # ForeignKey check may result in an endless loop if there is a circle of ForeignKeys (further work)
             self.check_foreign_keys(identifier, class_info, obj)
 
         elif prov_type == prov.ProvAgent or (
@@ -276,9 +294,10 @@ class ProvenanceGenerator:
     def filter_prov_objects(self, label, model_name, identifier, prov_class=prov.ProvEntity):
         """
         Returns all objects that are similar to a given ProvRecord, by a given id and name. 'Similar' means that they
-        describe the same instance in different timestamps.
+        describe the same instance at different timestamps with possible different attributes.
+
         :param label: Valid namespace prefix that has been declared in settings
-        :param model_name: ModelBase class of the instance whose ProvRecords have to be filtered
+        :param model_name: ModelBase of the instance whose ProvRecords have to be filtered
         :param identifier: Primary key of the instance for which all existing ProvRecords have to be checked
         :param prov_class: ProvType that has to be filtered
         :return: List of related ProvRecords
@@ -293,9 +312,10 @@ class ProvenanceGenerator:
 
     def check_derivation(self, label, model_name, pk):
         """
-        Checks if there need to be derivations between entities.
+        Checks if there need to be derivations between two ProvRecords.
+
         :param label: Valid namespace prefix that has been declared in settings
-        :param model_name: ModelBase class of the instance whose ProvRecords have to be checked
+        :param model_name: ModelBase of the instance whose ProvRecords have to be checked
         :param pk: Primary key of the instance for which all existing ProvRecords have to be checked
         """
         derivations = list(self.document.get_records(prov.ProvDerivation))
@@ -314,15 +334,16 @@ class ProvenanceGenerator:
 
     def create_foreign_key_entry(self, existing, foreign_model, foreign_pk):
         """
-        Creates a related ProvRecord for an existing entity. This ProvRecord is accessed through a foreign key in the original entity.
-        :param existing: The existing ProvRecord which has the foreign key field, identifier as str
-        :param foreign_model: ModelBase class of the foreign key instance
-        :param foreign_pk: Primary key of the foreign key instance
+        Creates a related ProvRecord for the referenced ForeignKey of an existing ProvEntity or ProvAgent.
+
+        :param existing: The existing ProvRecord which has the ForeignKey field, identifier as str
+        :param foreign_model: ModelBase of the ForeignKey instance
+        :param foreign_pk: Primary key of the ForeignKey instance
         """
         foreign_key_obj = foreign_model.objects.get(pk=foreign_pk)
         identifier = self.create_prov_record(foreign_model, foreign_key_obj)
         if identifier:
-            if (foreign_model._meta.label and foreign_key_obj._meta.label) in self.config.entities:
+            if foreign_key_obj._meta.label in self.config.entities:
                 self.create_relation(existing, identifier, prov.ProvMembership)
             elif foreign_model._meta.label in self.config.agents or (
                     any(ns.prefix == "auth" for ns in self.config.namespaces) and foreign_model._meta.app_label == "auth"):
@@ -331,10 +352,13 @@ class ProvenanceGenerator:
                 else:
                     self.create_relation(existing.identifier._str, identifier, prov.ProvAttribution)
 
-    def create_many_to_many_record(self, parent_entity, obj, m2m_field):
+    def create_many_to_many_record(self, parent_record, obj, m2m_field):
         """
-        :param parent_entity: Parent ProvEntity of which the m2m field originates
-        :param obj: (ModelBase) Corresponding Object to the Parent Entity
+        Creates a ProvEntity for a ManyToManyField of the provided parent_record and writes it to the current ProvDocument.
+        Links the new entity to the parent.
+
+        :param parent_record: Parent ProvEntity or ProvAgent of which the m2m field originates
+        :param obj: (ModelBase) Corresponding Object to the parent
         :param m2m_field: ManyToManyField for which the new entity shall be generated
         :return: ProvEntity
         """
@@ -343,17 +367,21 @@ class ProvenanceGenerator:
                       (f'{obj._meta.app_label}:model_id', str(obj.id)),
                       (f'{obj._meta.app_label}:related_model', str(m2m_field.related_model))]
         identifier = f"{obj._meta.app_label}:{obj._meta.object_name}_{m2m_field.attname}-{obj.id}-{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')}"
-        if obj._meta.label in self.config.entities:
+        if obj._meta.label in self.config.entities or self.config.agents:
+            # Do not follow Users ManyToManyFields like Groups or permissions
+            if identifier.startswith("auth"):
+                return None
             entity = self.document.entity(identifier, attributes)
-            self.create_relation(parent_entity, identifier, prov.ProvMembership)
+            self.create_relation(parent_record, identifier, prov.ProvMembership)
             return entity.identifier._str
         return None
 
     def check_foreign_keys(self, identifier, sender, instance, prov_class=prov.ProvEntity):
         """
-        Checks if an instance has referenced foreign keys and creates ProvRecords for them
-        :param sender: ModelBase class of the sending instance
-        :param instance: Instance of the ModelBase class
+        Checks if an instance of a Django model contains ForeignKeys and creates ProvRecords for them.
+
+        :param sender: ModelBase of the sending instance
+        :param instance: Instance of the ModelBase
         :param kwargs: Kwargs that got passed
         """
         records = self.filter_prov_objects(sender._meta.app_label, instance._meta.object_name, instance.id, prov_class)
@@ -375,8 +403,9 @@ class ProvenanceGenerator:
 
     def check_is_already_existing(self, record, attributes):
         """
-        Checks if the exactly same prov record is already existing in the document.
-        If True is returned, this would mean that it was tried to write the exakt record with a new id.
+        Checks if the exact same prov record is already existing in the current ProvDocument.
+        If True is returned, a record with the exact same attributes is already existing.
+
         :param record: ProvRecord of which the attributes have to be checked
         :param attributes: List of attributes which are compared
         :return: True if existing, False if not
@@ -393,7 +422,7 @@ class ProvenanceGenerator:
 
     def create_relation(self, first, second, rel_type):
         """
-        Creates relations of type 'rel_type' between two ProvRecords.
+        Creates relations of type 'rel_type' between two ProvRecords. Adds the relation to the current ProvDocument.
         """
         # document.get_record() doesn't work for relations
         similar_records = list(self.document.get_records(rel_type))
@@ -448,6 +477,7 @@ class ProvenanceGenerator:
     def activity(self, name=None):
         """
         Decorator-function that can be applied to Views and other functions.
+
         :param name: Name that has to be applied to the decorated function
         :return: _decorator
         """
@@ -455,6 +485,7 @@ class ProvenanceGenerator:
         def _decorator(func):
             """
             Sets the name for the decorated function.
+
             :param func: Decorated function
             :return: wrapped_func
             """
@@ -468,6 +499,7 @@ class ProvenanceGenerator:
                 """
                 Captures the execution of different decorated Views and functions.
                 Creates ProvActivities for each executed function and relates them.
+
                 :param args: Args of the decorated function
                 :param kwargs: Kwargs of the decorated function
                 :return: Return value of the decorated function

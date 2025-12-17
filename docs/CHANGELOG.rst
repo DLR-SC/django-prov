@@ -1,22 +1,50 @@
-# Changelog 
+.. _Changelog:
 
-## Version 0.2 (2025-12-08)
+Changelog
+=========
+
+Version 0.2..1 (17.12.2025)
+---------------------------
+
+Adds documentation pages and minor patches
+
+Documentation
+^^^^^^^^^^^^^
+
+- Added documentation built with sphinx, consisting of:
+    - general information
+    - configuration information
+    - code documentation
+
+Patches
+^^^^^^^
+
+- fixed record creation for agent objects that have ManyToMany fields
+- fixed record creation for agent objects in ManyToMany fields
+
+Version 0.2 (2025-12-08)
+------------------------
 
 Introduces an improved ProvenanceGenerator, the new ProvenanceGeneratorConfiguration and patches.
 
-### ProvenanceGenerator
+ProvenanceGenerator
+^^^^^^^^^^^^^^^^^^^
 
 - The ProvenanceGenerator is now configured using a ProvenanceGeneratorConfiguration
 - Fields of Django objects can be specified for reducing the overhead
 - System information recording can be specified
 - added unit and integration tests
 
-### ProvenanceGeneratorConfiguration
+ProvenanceGeneratorConfiguration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 - Specifies entities, agents, namespaces, output and extras
 - Validates given configurations
 - Added unit and integration tests
 
-### Patches
+Patches
+^^^^^^^
+
 - Improved edge case and Exception handling
   - Improved relations between two agents
   - Improved backward connection of existing ProvRecords
@@ -25,24 +53,30 @@ Introduces an improved ProvenanceGenerator, the new ProvenanceGeneratorConfigura
   - Improved output handling
 - Made maximum field value length settable 
 
-## Version 0.1.1 (2025-07-23)
+Version 0.1.1 (2025-07-23)
+--------------------------
 
 Patches, example application and initial Artifactory release.
 
-### Patches
+Patches
+^^^^^^^
 - Refactored time representation in the object identifier
 - Improved edge case and Exception handling
 - Improved internal object representation
 
-### Example application
+Example application
+^^^^^^^^^^^^^^^^^^^
 - Added an example application
 - Added unit and integration tests
 
-### Documentation
+Documentation
+^^^^^^^^^^^^^
 - Added an instruction for configuring the django-prov tool.
 
-### Artifactory
+Artifactory
+^^^^^^^^^^^
 - This version is the first version of django-prov to get published to the artifactory
 
-## Version 0.1
+Version 0.1
+-----------
 The version 0.1 of django-prov collected all important features and progress made before a release process was established.
