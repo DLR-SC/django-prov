@@ -26,17 +26,20 @@ You can install it from PyPi hosted on artifacts.dlr.de with the following comma
 - The extra argument :code:`--index-url` uses the bacardi-pypi-local-release which contains internal packages like django-prov.
 - The extra argument :code:`--extra-index-url` uses the bacardi-pypi-remote which contains mirrored external packages like Django and prov.
 
-.. important::
 
-    If you want to generate graphical output like SVG or PNG files, you also need to have graphviz installed:
+.. only:: sphinx
 
-    .. code-block:: shell
+    .. important::
 
-        apt install -y graphviz graphviz-dev
+        If you want to generate graphical output like SVG or PNG files, you also need to have graphviz installed:
 
-.. seealso::
+        .. code-block:: shell
 
-   - **Development Installation:** :ref:`development-installation`
+            apt install -y graphviz graphviz-dev
+
+    .. seealso::
+
+       - **Development Installation:** :ref:`development-installation`
 
 .. install-end
 

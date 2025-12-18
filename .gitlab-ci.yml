@@ -57,7 +57,7 @@ validate_release_tag:
 build-docs:
   stage: docs
   script:
-    - sphinx-build -b html docs/ build/docs/
+    - sphinx-build -t sphinx -b html docs/ build/docs/
   artifacts:
     paths:
       - build/docs/
