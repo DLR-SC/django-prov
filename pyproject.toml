@@ -21,7 +21,7 @@ classifiers = [
 dynamic = ["version", "readme"]
 
 [project.urls]
-"Code" = "https://gitlab.dlr.de/ssa/django-prov"
+"Code" = "https://gitlab.dlr.de/provenance/django-prov"
 
 [project.optional-dependencies]
 test = [
