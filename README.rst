@@ -102,7 +102,7 @@ Documentation
 
 The documentation of Django Provenance is available here: `Official Documentation`_
 
-.. _Official Documentation: https://ssa.pages.gitlab.dlr.de/django-prov/
+.. _Official Documentation: https://provenance.pages.gitlab.dlr.de/django-prov/
 
 .. build-start
 
@@ -111,12 +111,12 @@ Build Status
 
 The pipeline and coverage status is indicative of the :code:`main` branch.
 
-.. image:: https://gitlab.dlr.de/ssa/django-prov/badges/main/pipeline.svg
-    :target: https://gitlab.dlr.de/ssa/django-prov/commits/main
+.. image:: https://gitlab.dlr.de/provenance/django-prov/badges/main/pipeline.svg
+    :target: https://gitlab.dlr.de/provenance/django-prov/commits/main
     :alt: Build status main branch
 
-.. image:: https://gitlab.dlr.de/ssa/django-prov/badges/main/coverage.svg
-    :target: https://gitlab.dlr.de/ssa/django-prov/main/coverage/
+.. image:: https://gitlab.dlr.de/provenance/django-prov/badges/main/coverage.svg
+    :target: https://gitlab.dlr.de/provenance/django-prov/main/coverage/
     :alt: Coverage percentage main branch
 
 .. build-end

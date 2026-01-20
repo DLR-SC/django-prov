@@ -10,6 +10,7 @@ stages:
 
 default:
   tags:
+    - sc
     - docker
   image: $DOCKERHUB_MIRROR/python:3.12
   before_script:
@@ -25,7 +26,7 @@ default:
 test-django-execution:
   stage: test
   tags:
-    - bacardi2
+    - sc
     - docker
   script:
     - cd example/
@@ -84,7 +85,7 @@ package:
 publish-to-gitlab:
   stage: publish
   variables:
-    PYPI_GITLAB: https://gitlab-ci-token:$CI_JOB_TOKEN@gitlab.dlr.de/api/v4/projects/11169/packages/pypi
+    PYPI_GITLAB: https://gitlab-ci-token:$CI_JOB_TOKEN@gitlab.dlr.de/api/v4/projects/58836/packages/pypi
   script:
     - pip install twine
     - twine upload --repository-url $PYPI_GITLAB --verbose dist/django_prov*.whl

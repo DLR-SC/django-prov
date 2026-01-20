@@ -34,7 +34,7 @@ If you want to contribute to django-prov, you can clone it and install it with d
 
 .. code-block:: shell
 
-    git clone https://gitlab.dlr.de/ssa/django-prov.git
+    git clone https://gitlab.dlr.de/provenance/django-prov.git
     cd django-prov/
     pip install -e ".[develop, test]"
 
