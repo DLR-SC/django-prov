@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+#
+# SPDX-License-Identifier: MIT
+
 [build-system]
 requires = ['setuptools']
 build-backend = "setuptools.build_meta"
@@ -9,7 +14,8 @@ authors = [
     {name = "Benjamin Bauer", email = "benjamin.bauer@dlr.de"},
 ]
 requires-python = ">=3.8"
-license = {text = "License :: Other/Proprietary License"}
+license = "MIT"
+license-files = ["LICENSES/*", "LICENSE.rst"]
 dependencies = [
     "Django",
     "prov[dot]==2.0.1",
@@ -32,14 +38,12 @@ test = [
 ]
 develop = [
     "twine",
-    "sphinx"
+    "sphinx",
+    "reuse"
 ]
 
 [tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["."]
+packages = ["django_prov"]
 
 [tool.setuptools.dynamic]
 version = {attr = "django_prov.__version__"}
@@ -47,6 +51,7 @@ readme = {file = ["README.rst"]}
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "example.settings"
+pythonpath = "."
 
 [tool.coverage.run]
 branch = true

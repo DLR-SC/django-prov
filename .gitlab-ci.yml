@@ -1,9 +1,15 @@
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+#
+# SPDX-License-Identifier: MIT
+
 variables:
   ARTIFACTORY_AUTH: $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN
   PYPI_MIRROR: https://$ARTIFACTORY_AUTH@artifacts.dlr.de/artifactory/api/pypi/$PYPI_REMOTE/simple
 
 stages:
   - test
+  - audit
   - docs
   - package
   - publish
@@ -14,6 +20,7 @@ default:
     - docker
   image: $DOCKERHUB_MIRROR/python:3.12
   before_script:
+    - mkdir -p build
     - apt update -y
     - apt install -y graphviz graphviz-dev
     - pip install -e ".[test, develop]"
@@ -35,7 +42,6 @@ test-django-execution:
 coverage-report:
   stage: test
   script:
-    - mkdir -p build
     - pytest --cov --cov-report=term --cov-report=html --cov-report=xml --junitxml=build/test-report.xml tests/
   artifacts:
     expose_as: "Coverage Report"
@@ -54,6 +60,18 @@ validate_release_tag:
     - python -c "import django_prov; assert django_prov.__version__ == '$CI_COMMIT_TAG'"
   rules:
     - !reference [.default_publish_rules, rules]
+
+license-information:
+  stage: audit
+  tags:
+    - sc
+    - docker
+  script:
+    - reuse lint -j >> build/license_report.json
+  artifacts:
+    expose_as: "License Report"
+    paths:
+      - build/license_report.json
 
 build-docs:
   stage: docs

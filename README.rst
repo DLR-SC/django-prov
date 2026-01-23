@@ -1,3 +1,8 @@
+.. SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+.. SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+..
+.. SPDX-License-Identifier: MIT
+
 Django Provenance
 =================
 
@@ -10,10 +15,12 @@ Django-prov is a Django app to capture Provenance related data in your Django pr
 Installation
 ------------
 
-django-prov is tested on Python 3.12 and depends on the libraries `Django`_ and `prov`_
+django-prov is tested on Python 3.12 and depends on the libraries `Django`_ (`BSD-3-Clause License`_) and `prov`_ (`MIT License`_)
 
 .. _Django: https://www.djangoproject.com/
+.. _BSD-3-Clause License: https://gitlab.dlr.de/provenance/django-prov/-/blob/main/LICENSES/BSD-3-Clause.txt
 .. _prov: https://prov.readthedocs.io/en/latest/index.html
+.. _MIT License: https://gitlab.dlr.de/provenance/django-prov/-/blob/main/LICENSES/MIT.txt
 
 You can install it from PyPi hosted on artifacts.dlr.de with the following command:
 
@@ -126,7 +133,7 @@ Changes
 
 Please see the `CHANGELOG file`_ for notable changes.
 
-.. _CHANGELOG file: ./docs/CHANGELOG.rst
+.. _CHANGELOG file: https://gitlab.dlr.de/provenance/django-prov/-/blob/main//docs/CHANGELOG.rst
 
 Contributors
 --------------------------
@@ -138,6 +145,4 @@ License
 
 See the `LICENSE file`_ for information about how the package is licensed
 
-.. _LICENSE file: ./LICENSE.rst
-
-
+.. _LICENSE file: https://gitlab.dlr.de/provenance/django-prov/-/blob/main/LICENSE.rst
