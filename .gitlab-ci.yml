@@ -61,13 +61,25 @@ validate_release_tag:
   rules:
     - !reference [.default_publish_rules, rules]
 
-license-information:
+license-check:
   stage: audit
   tags:
     - sc
     - docker
   script:
     - reuse lint -j >> build/license_report.json
+  artifacts:
+    expose_as: "License Report"
+    paths:
+      - build/license_report.json
+
+citation-check:
+  stage: audit
+  tags:
+    - sc
+    - docker
+  script:
+    - cffconvert --validate
   artifacts:
     expose_as: "License Report"
     paths:

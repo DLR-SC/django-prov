@@ -39,7 +39,8 @@ test = [
 develop = [
     "twine",
     "sphinx",
-    "reuse"
+    "reuse",
+    "cffconvert"
 ]
 
 [tool.setuptools]
