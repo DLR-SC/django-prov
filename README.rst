@@ -3,10 +3,15 @@
 ..
 .. SPDX-License-Identifier: MIT
 
+
+
 Django Provenance
 =================
 
 .. install-start
+
+    Django-prov is no longer being actively developed. The repository archives the status of version 2.0.2, which was actively developed in GitLab.
+    For more information, please contact carina.haupt@dlr.de.
 
 Django-prov is a Django app to capture Provenance related data in your Django project. It complies to the `W3C PROV Data Model`_.
 
@@ -18,20 +23,15 @@ Installation
 django-prov is tested on Python 3.12 and depends on the libraries `Django`_ (`BSD-3-Clause License`_) and `prov`_ (`MIT License`_)
 
 .. _Django: https://www.djangoproject.com/
-.. _BSD-3-Clause License: https://gitlab.dlr.de/provenance/django-prov/-/blob/main/LICENSES/BSD-3-Clause.txt
+.. _BSD-3-Clause License: https://github.com/django/django/blob/main/LICENSE
 .. _prov: https://prov.readthedocs.io/en/latest/index.html
-.. _MIT License: https://gitlab.dlr.de/provenance/django-prov/-/blob/main/LICENSES/MIT.txt
+.. _MIT License: https://github.com/DLR-SC/django-prov/-/blob/main/LICENSES/MIT.txt
 
-You can install it from PyPi hosted on artifacts.dlr.de with the following command:
+You can install it from PyPi with the following command:
 
 .. code-block:: shell
 
-    pip install django-prov \
-       --index-url https://<artifactory_user>:<artifactory_local_token>@artifacts.dlr.de/artifactory/api/pypi/bacardi-pypi-local-release/simple \
-       --extra-index-url https://<artifactory_user>:<artifactory_remote_token>@artifacts.dlr.de/artifactory/api/pypi/bacardi-pypi-remote/simple
-
-- The extra argument :code:`--index-url` uses the bacardi-pypi-local-release which contains internal packages like django-prov.
-- The extra argument :code:`--extra-index-url` uses the bacardi-pypi-remote which contains mirrored external packages like Django and prov.
+    pip install django-prov
 
 
 .. only:: sphinx
@@ -62,7 +62,7 @@ If you want to generate graphical output like SVG or PNG files, you also need to
 
 - **Development Installation:** `Development installation`_
 
-.. _Development installation: ./docs/general/installation.rst
+.. _Development installation: https://github.com/DLR-SC/django-prov/-/blob/main/docs/general/installation.rst
 
 .. usage-start
 
@@ -71,9 +71,10 @@ Usage
 
 Django-prov is thought to be wrapped around your own Django project:
 
-.. image:: ../docs/workflow.svg
+.. image:: https://raw.githubusercontent.com/DLR-SC/django-prov/main/docs/workflow.svg
     :width: 40%
     :align: center
+    :target: https://raw.githubusercontent.com/DLR-SC/django-prov/main/docs/workflow.svg
 
 You need to follow three steps to start recording provenance in your app:
 
@@ -101,7 +102,7 @@ You need to follow three steps to start recording provenance in your app:
 
 - **Configuration options:** `Configuration options`_
 
-.. _Configuration options: ./docs/django_prov_configuration/configuration_general.rst
+.. _Configuration options: https://github.com/DLR-SC/django-prov/-/blob/main/docs/django_prov_configuration/configuration_general.rst
 
 
 Documentation
@@ -109,40 +110,30 @@ Documentation
 
 The documentation of Django Provenance is available here: `Official Documentation`_
 
-.. _Official Documentation: https://provenance.pages.gitlab.dlr.de/django-prov/
+.. _Official Documentation: https://github.com/DLR-SC/django-prov/-/blob/main/docs/
 
-.. build-start
-
-Build Status
-----------------
-
-The pipeline and coverage status is indicative of the :code:`main` branch.
-
-.. image:: https://gitlab.dlr.de/provenance/django-prov/badges/main/pipeline.svg
-    :target: https://gitlab.dlr.de/provenance/django-prov/commits/main
-    :alt: Build status main branch
-
-.. image:: https://gitlab.dlr.de/provenance/django-prov/badges/main/coverage.svg
-    :target: https://gitlab.dlr.de/provenance/django-prov/main/coverage/
-    :alt: Coverage percentage main branch
-
-.. build-end
 
 Changes
 -------
 
 Please see the `CHANGELOG file`_ for notable changes.
 
-.. _CHANGELOG file: https://gitlab.dlr.de/provenance/django-prov/-/blob/main//docs/CHANGELOG.rst
+.. _CHANGELOG file: https://github.com/DLR-SC/django-prov/-/blob/main/docs/CHANGELOG.rst
 
 Contributors
 --------------------------
 
 - Benjamin Bauer <Benjamin.Bauer@dlr.de>
 
+Contributing
+------------
+
+The project is no longer actively maintained. For more information, please contact carina.haupt@dlr.de.
+
 License
 -------
 
-See the `LICENSE file`_ for information about how the package is licensed
+This project is `MIT`_ licensed.
+opyright © 2026 German Aerospace Center (DLR) and individual contributors.
 
-.. _LICENSE file: https://gitlab.dlr.de/provenance/django-prov/-/blob/main/LICENSE.rst
+.. _MIT: https://github.com/DLR-SC/django-prov/-/blob/main/LICENSE.rst

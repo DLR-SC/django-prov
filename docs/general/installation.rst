@@ -11,15 +11,11 @@ django-prov is tested on Python 3.12 and depends on the libraries `Django`_ and 
 .. _Django: https://www.djangoproject.com/
 .. _prov: https://prov.readthedocs.io/en/latest/index.html
 
-You can install it from PyPi hosted on artifacts.dlr.de with the following command:
+You can install it from PyPi with the following command:
 
 .. code-block:: shell
 
-    pip install django-prov --index-url https://<artifactory_user>:<artifactory_local_token>@artifacts.dlr.de/artifactory/api/pypi/bacardi-pypi-local-release/simple
-       --extra-index-url https://<artifactory_user>:<artifactory_remote_token>@artifacts.dlr.de/artifactory/api/pypi/bacardi-pypi-remote/simple
-
-- The extra argument :code:`--index-url` uses the bacardi-pypi-local-release which contains internal packages like django-prov.
-- The extra argument :code:`--extra-index-url` uses the bacardi-pypi-remote which contains mirrored external packages like Django and prov.
+    pip install django-prov
 
 .. important::
 
@@ -39,7 +35,7 @@ If you want to contribute to django-prov, you can clone it and install it with d
 
 .. code-block:: shell
 
-    git clone https://gitlab.dlr.de/provenance/django-prov.git
+    git clone https://github.com/DLR-SC/django-prov.git
     cd django-prov/
     pip install -e ".[develop, test]"
 

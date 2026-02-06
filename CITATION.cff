@@ -16,7 +16,7 @@ authors:
     email: benjamin.bauer@dlr.de
     affiliation: German Aerospace Center (DLR)
     orcid: 'https://orcid.org/0009-0005-4250-974X'
-repository-code: 'https://gitlab.dlr.de/provenance/django-prov/'
+repository-code: 'https://github.com/DLR-SC/django-prov/'
 abstract: >-
   Django app to capture Provenance related data in your
   Django project

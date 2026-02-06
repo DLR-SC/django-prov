@@ -19,7 +19,7 @@ After that, the books can be ordered by another student.
 
 The example app can be found here: `Django Provenance - Example application`_
 
-.. _Django Provenance - Example application: https://gitlab.dlr.de/provenance/django-prov/-/tree/main/example
+.. _Django Provenance - Example application: https://github.com/DLR-SC/django-prov/-/tree/main/example
 
 .. _example-questions:
 
