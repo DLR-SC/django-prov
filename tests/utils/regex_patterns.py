@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+#
+# SPDX-License-Identifier: MIT
+
 """
 This file holds different regex patterns to validate the output of the ProvenanceGenerator during integration tests.
 """

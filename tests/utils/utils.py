@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+#
+# SPDX-License-Identifier: MIT
+
 """
 This file holds functionality to clean the ProvenanceGenerator before each test.
 """

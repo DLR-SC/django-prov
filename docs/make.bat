@@ -1,3 +1,8 @@
+REM SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+REM SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+REM
+REM SPDX-License-Identifier: MIT
+
 @ECHO OFF
 
 pushd %~dp0

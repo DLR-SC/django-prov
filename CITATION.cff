@@ -1,0 +1,28 @@
+
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+#
+# SPDX-License-Identifier: MIT
+
+cff-version: 1.2.0
+title: Django Provenance
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Benjamin
+    family-names: Bauer
+    email: benjamin.bauer@dlr.de
+    affiliation: German Aerospace Center (DLR)
+    orcid: 'https://orcid.org/0009-0005-4250-974X'
+repository-code: 'https://github.com/DLR-SC/django-prov/'
+abstract: >-
+  Django app to capture Provenance related data in your
+  Django project
+keywords:
+  - Django
+  - Provenance
+  - Python
+  - Django signals
+license: MIT

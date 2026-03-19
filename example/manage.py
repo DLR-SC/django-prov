@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
+#
+# SPDX-License-Identifier: MIT
+
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
