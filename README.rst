@@ -10,8 +10,8 @@ Django Provenance
 
 .. install-start
 
-    Django-prov is no longer being actively developed. The repository archives the status of version 2.0.2, which was actively developed in GitLab.
-    For more information, please contact carina.haupt@dlr.de.
+Django-prov is no longer being actively developed. The repository archives the status of version 2.0.2, which was actively developed in GitLab.
+For more information, please contact carina.haupt@dlr.de.
 
 Django-prov is a Django app to capture Provenance related data in your Django project. It complies to the `W3C PROV Data Model`_.
 
@@ -27,12 +27,13 @@ django-prov is tested on Python 3.12 and depends on the libraries `Django`_ (`BS
 .. _prov: https://prov.readthedocs.io/en/latest/index.html
 .. _MIT License: https://github.com/DLR-SC/django-prov/-/blob/main/LICENSES/MIT.txt
 
-You can install it from PyPi with the following command:
+You can install it with the following command:
 
 .. code-block:: shell
 
-    pip install django-prov
-
+    git clone https://github.com/DLR-SC/django-prov.git
+    cd django-prov/
+    pip install -e .
 
 .. only:: sphinx
 

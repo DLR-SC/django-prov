@@ -6,6 +6,8 @@
 import sys
 import warnings
 import datetime
+import inspect
+import logging
 
 from functools import wraps
 from pathlib import Path
@@ -15,7 +17,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.handlers.wsgi import WSGIRequest
-from django.db.models import ForeignKey
+from django.db.models import ForeignKey, Model
 from django.db.models.signals import *
 
 from django_prov.configuration import ProvenanceGeneratorConfiguration
@@ -198,6 +200,7 @@ class ProvenanceGenerator:
         """
         self.executing_activities = list()
         self.document = prov.ProvDocument()
+        self._python_records = {}
         self.document.set_default_namespace(self.config.default_namespace.uri)
 
         for namespace in self.config.namespaces:
@@ -479,13 +482,100 @@ class ProvenanceGenerator:
                       ProvenanceGeneratorWarning)
 
 
-    def activity(self, name=None):
+    def _class_activity(self, cls, name, fields):
+        """Decorate construction and public methods without replacing the class."""
+        if issubclass(cls, Model):
+            raise TypeError("Record Django models through their configured signals")
+        methods = []
+        for method_name in dir(cls):
+            if method_name.startswith("_") and method_name != "__init__":
+                continue
+            member = inspect.getattr_static(cls, method_name)
+            descriptor = type(member) if isinstance(member, (staticmethod, classmethod)) else None
+            function = member.__func__ if descriptor else member
+            if method_name == "__init__" and function is object.__init__:
+                def function(self, *args, **kwargs):
+                    object.__init__(self, *args, **kwargs)
+                function.__name__ = "__init__"
+                function.__qualname__ = f"{cls.__qualname__}.__init__"
+                function.__module__ = cls.__module__
+            if not inspect.isfunction(function):
+                continue
+            if inspect.iscoroutinefunction(function) or inspect.isgeneratorfunction(function) or inspect.isasyncgenfunction(function):
+                raise TypeError("Only synchronous activities are supported")
+            # Explicit method decorators take precedence; never wrap them twice.
+            if getattr(function, "_prov_activity", None) is self:
+                continue
+            method_fields = None if descriptor else fields
+            wrapped = self.activity(name=f"{name or cls.__name__}.{method_name}", fields=method_fields)(function)
+            wrapped._prov_receiver = descriptor is None
+            methods.append((method_name, descriptor(wrapped) if descriptor else wrapped))
+        for method_name, member in methods:
+            setattr(cls, method_name, member)
+        return cls
+
+    def _namespace_prefix(self, module):
+        parts = module.split(".")
+        label = parts[0] if module.startswith("django.") else parts[-2] if len(parts) > 1 else parts[0]
+        return f"{label}:" if any(ns.prefix == label for ns in self.config.namespaces) else ""
+
+    def _finish_document(self):
+        try:
+            self.print_document()
+        finally:
+            self.create_new_document()
+
+    def _timestamp_identifier(self, name, timestamp):
+        """Keep timestamp identifiers unique within the current document."""
+        base = f"{name}-{timestamp.strftime('%Y-%m-%d_%H-%M-%S-%f')}"
+        identifier = base
+        suffix = 2
+        # Running activities are only added to the document when they finish.
+        while identifier in self.executing_activities or self.document.get_record(identifier):
+            identifier = f"{base}-{suffix}"
+            suffix += 1
+        return identifier
+
+    def _record_python_instance(self, instance, fields):
+        """Record selected state using the existing document/relation machinery."""
+        if isinstance(instance, (type, Model)):
+            raise TypeError("fields records ordinary instances, not classes or Django models")
+        prefix = self._namespace_prefix(type(instance).__module__)
+        # Capture values now; mutable values must not change an older snapshot.
+        attributes = [(prov.PROV_TYPE, f"{type(instance).__module__}.{type(instance).__qualname__}")]
+        for field in fields:
+            try:
+                value = getattr(instance, field)
+            except AttributeError as exc:
+                raise ProvenanceGeneratorException(f"Missing recorded attribute {field!r} on {type(instance).__name__}") from exc
+            attributes.append((f"{prefix}{field}", str(value)))
+        previous = self._python_records.get(id(instance))
+        if previous is not None and previous[1] == attributes:
+            return previous[2], False
+        identifier = self._timestamp_identifier(f"{prefix}{type(instance).__name__}", datetime.datetime.now())
+        self.document.entity(identifier, [(key, value if key == prov.PROV_TYPE else self.max_field_value_length(value))
+                                          for key, value in attributes])
+        # Retaining the object until document reset prevents Python id reuse.
+        self._python_records[id(instance)] = (instance, attributes, identifier)
+        if previous is not None:
+            self.create_relation(identifier, previous[2], prov.ProvDerivation)
+        return identifier, True
+
+    def activity(self, name=None, *, fields=None):
         """
         Decorator-function that can be applied to Views and other functions.
 
-        :param name: Name that has to be applied to the decorated function
+        :param name: Name applied to a function, or as a prefix for methods of a class.
+        :param fields: Optional instance attribute names to record as entities.
         :return: _decorator
         """
+
+        if fields is not None:
+            if not isinstance(fields, (list, tuple)) or any(not isinstance(field, str) or not field.isidentifier() for field in fields):
+                raise TypeError("fields must be a list or tuple of attribute names")
+            if len(set(fields)) != len(fields):
+                raise ValueError("fields must not contain duplicate names")
+            fields = tuple(fields)
 
         def _decorator(func):
             """
@@ -494,10 +584,18 @@ class ProvenanceGenerator:
             :param func: Decorated function
             :return: wrapped_func
             """
+            if inspect.isclass(func):
+                return self._class_activity(func, name, fields)
+            if isinstance(func, (staticmethod, classmethod)):
+                return type(func)(_decorator(func.__func__))
+            if inspect.iscoroutinefunction(func) or inspect.isgeneratorfunction(func) or inspect.isasyncgenfunction(func):
+                raise TypeError("Currently only synchronous functions are supported")
             if name is None:
                 _name = func.__name__
             else:
                 _name = name
+            signature = inspect.signature(func)
+            receiver_name = next(iter(signature.parameters), None)
 
             @wraps(func)
             def wrapped_func(*args, **kwargs):
@@ -510,12 +608,9 @@ class ProvenanceGenerator:
                 :return: Return value of the decorated function
                 """
                 start_time = datetime.datetime.now()
-                if "django." in func.__module__:
-                    label = func.__module__.split(".")[0]
-                else:
-                    label = func.__module__.split(".")[-2]
+                prefix = self._namespace_prefix(func.__module__)
                 # check if post or get request for excluding get? (further work)
-                attributes = [(prov.PROV_TYPE, f"{label}:func {func}")]
+                attributes = [(prov.PROV_TYPE, f"{prefix}func {func}")]
 
                 sys_info_func = self.config.extras.get("GET_SYSTEM_INFO")
                 if sys_info_func:
@@ -528,22 +623,62 @@ class ProvenanceGenerator:
 
                 # append args and kwargs the orig func got called with
                 if len(args) > 0:
-                    attributes.extend((f"{label}:args-{i}", self.arg_length_check(str(arg))) for i, arg in enumerate(args))
+                    attributes.extend((f"{prefix}args-{i}", self.arg_length_check(
+                        f"<{type(arg).__module__}.{type(arg).__qualname__}>"
+                        if i == 0 and (fields is not None or getattr(wrapped_func, "_prov_receiver", False))
+                        else str(arg))) for i, arg in enumerate(args))
                 if len(kwargs) > 0:
-                    attributes.extend((f"{label}:kwargs-{i}-{kwarg}", self.arg_length_check(str(kwargs[kwarg]))) for i, kwarg in enumerate(kwargs))
+                    attributes.extend((f"{prefix}kwargs-{i}-{kwarg}", self.arg_length_check(
+                        f"<{type(value).__module__}.{type(value).__qualname__}>"
+                        if kwarg == receiver_name and (fields is not None or getattr(wrapped_func, "_prov_receiver", False))
+                        else str(value))) for i, (kwarg, value) in enumerate(kwargs.items()))
 
-                identifier = f"{label}:{_name}-{start_time.strftime('%Y-%m-%d_%H-%M-%S-%f')}"
+                identifier = self._timestamp_identifier(f"{prefix}{_name}", start_time)
 
                 self.executing_activities.append(identifier)
-                result = func(*args, **kwargs)
+                instance = None
+                try:
+                    if fields is not None:
+                        bound = signature.bind(*args, **kwargs)
+                        instance = next(iter(bound.arguments.values()), None)
+                        if instance is None:
+                            raise TypeError("fields requires an instance as the first argument")
+                        if func.__name__ != "__init__":
+                            before, _ = self._record_python_instance(instance, fields)
+                            self.document.used(identifier, before)
+                    result = func(*args, **kwargs)
+                    if inspect.isawaitable(result) or inspect.isgenerator(result) or inspect.isasyncgen(result):
+                        if inspect.iscoroutine(result):
+                            result.close()
+                        raise TypeError("Activities must finish synchronously")
+                    result_text = str(result)
+                    if instance is not None:
+                        after, changed = self._record_python_instance(instance, fields)
+                        if changed:
+                            self.create_relation(after, identifier, prov.ProvGeneration)
+                except BaseException as exc:
+                    self.executing_activities.pop()
+                    attributes.append((f"{prefix}exception", type(exc).__name__))
+                    self.document.activity(identifier, start_time, datetime.datetime.now(), attributes)
+                    if self.executing_activities:
+                        self.create_relation(identifier, self.executing_activities[-1], prov.ProvCommunication)
+                    else:
+                        try:
+                            self._finish_document()
+                        except Exception as e:
+                            # Preserve the application's exception if export also fails.
+                            logging.getLogger(__name__).error("Provenance export failed: %s", e)
+                    raise
                 self.executing_activities.remove(identifier)
-                attributes.append((f"{label}:result", str(result)))
+                attributes.append((f"{prefix}result", result_text))
                 end_time = datetime.datetime.now()
 
                 self.document.activity(identifier, start_time, end_time, attributes)
 
                 # check for related objects
                 for possible_obj in args:
+                    if not isinstance(possible_obj, Model):
+                        continue
                     try:
                         related_objs = self.filter_prov_objects(possible_obj._meta.app_label,
                                                                 possible_obj._meta.object_name, possible_obj.id)
@@ -556,7 +691,7 @@ class ProvenanceGenerator:
                     self.create_relation(identifier, self.executing_activities[-1], prov.ProvCommunication)
 
                 # If Django Request: get request user
-                if isinstance(args[0], WSGIRequest) and any(ns.prefix == "auth" for ns in self.config.namespaces):
+                if args and isinstance(args[0], WSGIRequest) and any(ns.prefix == "auth" for ns in self.config.namespaces):
                     try:
                         user_agent_identifier = \
                         list(self.filter_prov_objects("auth", "User", args[0].user.id, prov.ProvAgent))[-1].identifier._str
@@ -567,10 +702,11 @@ class ProvenanceGenerator:
 
                 # If list is empty it means every activity got handled -> print finished document and start new one
                 if not self.executing_activities:
-                    self.print_document()
-                    self.create_new_document()
+                    self._finish_document()
                 return result
 
+            wrapped_func._prov_activity = self
+            wrapped_func._prov_receiver = receiver_name == "self"
             return wrapped_func
 
         return _decorator

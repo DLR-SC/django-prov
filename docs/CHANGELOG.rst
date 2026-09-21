@@ -8,10 +8,30 @@
 Changelog
 =========
 
-Version 0.2..1 (17.12.2025)
+Version 0.2.2 (16.09.2026)
+--------------------------
+
+Adds ordinary Python class support.
+
+New features
+^^^^^^^^^^^^
+- Added support for tracking ordinary Python classes
+    - classes or dataclasses can be tracked using the activity decorator
+    - class attributes can be tracked as entities
+
+Documentation
+^^^^^^^^^^^^^
+- Added documentation for recording ordinary Python classes
+
+Patches
+^^^^^^^
+
+- fixed ordering of same-named Provenance objects with the same timestamp
+
+Version 0.2.1 (17.12.2025)
 ---------------------------
 
-Adds documentation pages and minor patches
+Adds documentation pages and minor patches.
 
 Documentation
 ^^^^^^^^^^^^^

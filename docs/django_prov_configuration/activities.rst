@@ -46,29 +46,100 @@ If a function is calling another function that got decorated too, the Provenance
 How to record classes
 ---------------------
 
-Decorating a single class and all of its methods with a single decorator is currently not supported.
+For ordinary Python classes, apply the ``activity()`` decorator to a class to record
+construction and public methods:
 
-It is still possible to decorate each method itself, using the same decorator as in decorating functions:
+The following examples use plain Python versions of the library workflows of the
+``example`` application. Borrowings use the status codes: ``O`` (ordered), ``B``
+(borrowed), and ``R`` (returned).
 
 .. code-block:: python
 
-    class Returning:
-    ...
-        @generator_instance.activity(name="my_activity_name")
-        def return_a_borrowing(request, pk=None):
-            ...
+    @generator_instance.activity(name="Borrowing")
+    class Borrowing:
+        def __init__(self):
+            self.status = "O"
 
-        @generator_instance.activity(name="my_other_activity_name")
-        def return_all_borrowings(request):
-            ...
+        def start_borrowing(self):
+            self.status = "B"
+            return self.status
 
+The resulting activities will be named ``Borrowing.__init__`` and
+``Borrowing.start_borrowing``. The decorator returns the original class, preserving
+``isinstance`` checks and inheritance. Public inherited methods, static methods,
+and class methods are included. Private methods, properties, and special methods
+(except ``__init__()``) are not recorded. Parent classes are not modified.
+
+If you don't want to trace all methods of a class. you can still decorate individual methods instead. An explicit method decorator
+will be recorded over the class decorator and is not wrapped a second time:
+
+.. code-block:: python
+
+    class Borrowing:
+        def __init__(self):
+            self.status = "B"
+
+        @generator_instance.activity(name="return_borrowing", fields=["status"])
+        def return_borrowing(self):
+            self.status = "R"
+            return self.status
+
+Recording selected instance states
+----------------------------------
+
+The optional ``fields`` argument records the listed attributes as entity
+snapshots before and after function or class / dataclass calls. Without ``fields``, the decorator records the
+activity only. With ``fields=[]``, records will only contain the object's type.
+
+An existing state is linked to the activity through usage. A changed state is a
+new entity, linked to its previous version through derivation and to the activity
+through generation. Unchanged states will be reused within the current document, without
+creating additional generation relations. Construction records only the initialized state of the specified fields.
+If the values of recorded fields are bigger than the specified output size, they will be cut short.
+
+The first function parameter supplies the instance, including when passed by
+keyword. If you specify fields that don't exist, the generator will raise an Exception.
+Be careful, because attribute getters may run, which can result in additional runtime.
+Objects that get decorated with the ``activity()`` don't need to be added to the explicit Django model configuration.
+
+.. code-block:: python
+
+    from dataclasses import dataclass
+
+    @generator_instance.activity(fields=["status"])
+    @dataclass
+    class Borrowing:
+        status: str = "O"
+
+        def start_borrowing(self):
+            self.status = "B"
+
+        def return_borrowing(self):
+            self.status = "R"
+
+    @generator_instance.activity(name="borrow_and_return")
+    def borrow_and_return():
+        borrowing = Borrowing()
+        borrowing.start_borrowing()
+        borrowing.return_borrowing()
+
+    borrow_and_return()
+
+The example shows, how you can use the ``activity()`` decorator.
+
+Place the decorator above ``@dataclass`` so it sees the generated
+constructor. The outermost executed activty will export and reset the latest Provenance document.
+You can wrap a workflow in another activity to record several calls and their versions together.
+Direct attribute assignments outside decorated calls will not be intercepted.
 
 .. _activities-django-views-label:
 
 How to record Django class-based views
 --------------------------------------
 
-Similarly to normal classes, it is not possible to decorate a Django class-based view with a single decorator. Additionally, django-prov is tested decorating the ``dispatch()`` method of Djangos class-based views:
+For Django class-based views, it is proposed to decorate ``dispatch()`` with Django's ``method_decorator``.
+Whole-class decoration is intended for ordinary Python classes.
+Django models will be recorded using the existing configuration and connected signals:
 
 .. code-block:: python
 
