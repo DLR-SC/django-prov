@@ -11,11 +11,13 @@ django-prov is tested on Python 3.12 and depends on the libraries `Django`_ and 
 .. _Django: https://www.djangoproject.com/
 .. _prov: https://prov.readthedocs.io/en/latest/index.html
 
-You can install it from PyPi with the following command:
+You can install it with the following command:
 
 .. code-block:: shell
 
-    pip install django-prov
+    git clone https://github.com/DLR-SC/django-prov.git
+    cd django-prov/
+    pip install -e .
 
 .. important::
 

@@ -16,7 +16,7 @@ stages:
 
 default:
   tags:
-    - sc
+    - Ubuntu
     - docker
   image: $DOCKERHUB_MIRROR/python:3.12
   before_script:
@@ -33,7 +33,7 @@ default:
 test-django-execution:
   stage: test
   tags:
-    - sc
+    - Ubuntu
     - docker
   script:
     - cd example/
@@ -64,7 +64,7 @@ validate_release_tag:
 license-check:
   stage: audit
   tags:
-    - sc
+    - Ubuntu
     - docker
   script:
     - reuse lint -j >> build/license_report.json
@@ -76,7 +76,7 @@ license-check:
 citation-check:
   stage: audit
   tags:
-    - sc
+    - Ubuntu
     - docker
   script:
     - cffconvert --validate
