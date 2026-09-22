@@ -12,6 +12,7 @@ name = "django-prov"
 description = "Application for capturing Provenance Data in Django projects "
 authors = [
     {name = "Benjamin Bauer", email = "benjamin.bauer@dlr.de"},
+    {name = "Michael Meinel", email = "michael.meinel@dlr.de"},
 ]
 requires-python = ">=3.8"
 license = "MIT"

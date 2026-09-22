@@ -3,7 +3,7 @@ name: Documentation
 on:
   push:
     branches:
-      - fix-rendering
+      - main
   workflow_dispatch:
 
 permissions:

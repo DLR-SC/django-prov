@@ -8,7 +8,7 @@ Django Provenance
 
 .. install-start
 
-> Django-prov is no longer being actively developed. The repository archives the status of version 2.0.2, which was actively developed in GitLab.
+Django-prov is no longer being actively developed. The repository archives the status of version 2.0.2, which was actively developed in GitLab.
 For more information, please contact carina.haupt@dlr.de.
 
 Django-prov is a Django app to capture Provenance related data in your Django project. It complies to the `W3C PROV Data Model`_.
@@ -102,6 +102,7 @@ Contributors
 --------------------------
 
 - Benjamin Bauer <Benjamin.Bauer@dlr.de>
+- Michael Meinel <michael.meinel@dlr.de>
 
 Contributing
 ------------
