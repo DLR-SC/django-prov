@@ -1,4 +1,3 @@
-
 # SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 # SPDX-FileContributor: Benjamin Moritz Bauer <benjamin.bauer@dlr.de>
 #
@@ -16,6 +15,11 @@ authors:
     email: benjamin.bauer@dlr.de
     affiliation: German Aerospace Center (DLR)
     orcid: 'https://orcid.org/0009-0005-4250-974X'
+  - given-names: Michael
+    family-names: Meinel
+    email: michael.meinel@dlr.de
+    affiliation: German Aerospace Center (DLR)
+    orcid: 'https://orcid.org/0000-0001-6372-3853'
 repository-code: 'https://github.com/DLR-SC/django-prov/'
 abstract: >-
   Django app to capture Provenance related data in your

@@ -3,8 +3,6 @@
 ..
 .. SPDX-License-Identifier: MIT
 
-
-
 Django Provenance
 =================
 
@@ -35,20 +33,6 @@ You can install it with the following command:
     cd django-prov/
     pip install -e .
 
-.. only:: sphinx
-
-    .. important::
-
-        If you want to generate graphical output like SVG or PNG files, you also need to have graphviz installed:
-
-        .. code-block:: shell
-
-            apt install -y graphviz graphviz-dev
-
-    .. seealso::
-
-       - **Development Installation:** :ref:`development-installation`
-
 .. install-end
 
 **Important**
@@ -63,7 +47,7 @@ If you want to generate graphical output like SVG or PNG files, you also need to
 
 - **Development Installation:** `Development installation`_
 
-.. _Development installation: https://github.com/DLR-SC/django-prov/-/blob/main/docs/general/installation.rst
+.. _Development installation: https://github.com/DLR-SC/django-prov/blob/main/docs/general/installation.rst
 
 .. usage-start
 
@@ -90,20 +74,13 @@ You need to follow three steps to start recording provenance in your app:
 
 3. Instantiate a ProvenanceGenerator object in your apps.py to start the tracking.
 
-.. seealso::
-
-   - **Configuration options:** :ref:`config-toc-label`
-
-
-.. _Djangos built-in signals: https://docs.djangoproject.com/en/5.2/topics/signals/
-
 .. usage-end
 
 **See also**
 
 - **Configuration options:** `Configuration options`_
 
-.. _Configuration options: https://github.com/DLR-SC/django-prov/-/blob/main/docs/django_prov_configuration/configuration_general.rst
+.. _Configuration options: https://github.com/DLR-SC/django-prov/blob/main/docs/django_prov_configuration/configuration_general.rst
 
 
 Documentation
@@ -111,7 +88,7 @@ Documentation
 
 The documentation of Django Provenance is available here: `Official Documentation`_
 
-.. _Official Documentation: https://github.com/DLR-SC/django-prov/-/blob/main/docs/
+.. _Official Documentation: https://github.com/DLR-SC/django-prov/blob/main/docs/
 
 
 Changes
@@ -119,12 +96,13 @@ Changes
 
 Please see the `CHANGELOG file`_ for notable changes.
 
-.. _CHANGELOG file: https://github.com/DLR-SC/django-prov/-/blob/main/docs/CHANGELOG.rst
+.. _CHANGELOG file: https://github.com/DLR-SC/django-prov/blob/main/docs/CHANGELOG.rst
 
 Contributors
 --------------------------
 
 - Benjamin Bauer <Benjamin.Bauer@dlr.de>
+- Michael Meinel <michael.meinel@dlr.de>
 
 Contributing
 ------------
@@ -135,6 +113,6 @@ License
 -------
 
 This project is `MIT`_ licensed.
-opyright © 2026 German Aerospace Center (DLR) and individual contributors.
+Copyright © 2026 German Aerospace Center (DLR) and individual contributors.
 
-.. _MIT: https://github.com/DLR-SC/django-prov/-/blob/main/LICENSE.rst
+.. _MIT: https://github.com/DLR-SC/django-prov/blob/main/LICENSE.rst
